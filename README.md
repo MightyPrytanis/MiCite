@@ -18,7 +18,7 @@ The local package is cross-platform because it runs in the user's browser: Windo
 
 For Vercel deployment, the public privacy identifies Vercel as the hosting provider and link to Vercel's security documentation after the deployment is configured. Do not claim TLS 1.3, DDoS protection, specific compliance certifications, or any other provider feature until that feature is verified for the deployed project.
 
-The current `apps/micite` deployment is implemented as a browser-local checker with an optional same-origin parallel-citation lookup endpoint. The endpoint must reject free-form text/document payloads and accept only extracted citation identifiers. MiCite has no account system, no database, and no third-party scripts on the checker page. The local package ZIP is generated at `apps/micite/public/downloads/micite-local.zip`.
+The current `apps/micite` deployment is implemented as a browser-local checker with an optional same-origin parallel-citation supplier endpoint. The endpoint rejects free-form text/document payloads and accepts only extracted citation identifiers. MiCite has no account system, no database, and no third-party scripts on the checker page. The local package ZIP is generated at `apps/micite/public/downloads/micite-local.zip`.
 
 ## Supported Input
 Current:
@@ -64,7 +64,7 @@ MiCite also reports that case names should be italicized in formatted documents.
 
 Case-name abbreviation checking includes the full Appendix 5 case-name abbreviation list from the Michigan Appellate Opinion Manual. Most entries are safe deterministic rewrites inside detected case names. Context-dependent entries, including `General`, `Michigan`, and `United States`, are flagged for review rather than automatically rewritten because Appendix 5 contains exceptions for those terms.
 
-The web and local static interface includes a simple option to include or omit supplied parallel citations to regional reporters and `L Ed` when they appear in the source text. The hosted web app can optionally generate missing parallel citation suggestions through CourtListener by sending only extracted citation identifiers: volume, reporter, and page. The local offline package does not require CourtListener lookup and does not include a CourtListener API token.
+The web and local static interface includes a simple option to include or omit supplied parallel citations to regional reporters and `L Ed` when they appear in the source text. The hosted web app can optionally generate missing parallel citation suggestions through a same-origin CourtListener supplier by sending only extracted citation identifiers: volume, reporter, and page. The supplier uses a server-side Vercel environment variable, `COURTLISTENER_API_TOKEN`; users do not need CourtListener accounts or tokens. The local offline package does not require CourtListener lookup and does not include a CourtListener API token.
 
 The static interface can generate three table views:
 
@@ -248,4 +248,3 @@ As of now, MiCite remains under development. It may, after testing and user feed
 - Microsoft Word add-in for checking and applying formatted citation corrections inside Word.
 
 If you have a request, suggestion, or wish to report an error or bug in MiCite, please contact us by email at  info@cognisint.com.
-

@@ -19,6 +19,41 @@ const REPORTER_TO_MICHIGAN_STYLE = new Map([
   ['F.4th', 'F4th'],
 ]);
 
+const MICHIGAN_STYLE_TO_COURTLISTENER_REPORTER = new Map([
+  ['Mich', 'Mich.'],
+  ['Mich App', 'Mich. App.'],
+  ['NW2d', 'N.W.2d'],
+  ['NW3d', 'N.W.3d'],
+  ['US', 'U.S.'],
+  ['S Ct', 'S. Ct.'],
+  ['L Ed', 'L. Ed.'],
+  ['L Ed 2d', 'L. Ed. 2d'],
+  ['F Supp', 'F. Supp.'],
+  ['F Supp 2d', 'F. Supp. 2d'],
+  ['F Supp 3d', 'F. Supp. 3d'],
+  ['F2d', 'F.2d'],
+  ['F3d', 'F.3d'],
+  ['F4th', 'F.4th'],
+]);
+
+const REPORTER_PRIORITY = [
+  'Mich',
+  'Mich App',
+  'NW3d',
+  'NW2d',
+  'NW',
+  'US',
+  'S Ct',
+  'L Ed 2d',
+  'L Ed',
+  'F Supp 3d',
+  'F Supp 2d',
+  'F Supp',
+  'F4th',
+  'F3d',
+  'F2d',
+];
+
 function sendJson(response, status, payload) {
   response.statusCode = status;
   response.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -68,6 +103,12 @@ function assertCitationOnlyPayload(payload) {
 
   return payload.citations.map((citation) => {
     if (!citation || typeof citation !== 'object') throw new Error('Invalid citation entry.');
+    const allowedKeys = new Set(['id', 'volume', 'reporter', 'page']);
+    for (const key of Object.keys(citation)) {
+      if (!allowedKeys.has(key)) {
+        throw new Error(`Invalid citation field ${key}. Send only id, volume, reporter, and page.`);
+      }
+    }
     const { id, volume, reporter, page } = citation;
     if (!/^[\w-]{1,80}$/.test(String(id))) throw new Error('Invalid citation id.');
     if (!/^\d{1,5}$/.test(String(volume))) throw new Error('Invalid citation volume.');
@@ -86,57 +127,126 @@ function normalizeReporter(reporter) {
   return REPORTER_TO_MICHIGAN_STYLE.get(reporter) || reporter.replace(/\./g, '').replace(/\s+/g, ' ').trim();
 }
 
+function courtListenerReporter(reporter) {
+  return MICHIGAN_STYLE_TO_COURTLISTENER_REPORTER.get(reporter) || reporter;
+}
+
 function citationPart(citation) {
   if (!citation?.volume || !citation?.reporter || !citation?.page) return null;
   return `${citation.volume} ${normalizeReporter(citation.reporter)} ${citation.page}`;
 }
 
-function wantedParallelCitations(primary, clusters) {
-  const primaryReporter = normalizeReporter(primary.reporter);
-  const wantedReporters = primaryReporter === 'US'
-    ? new Set(['S Ct', 'L Ed', 'L Ed 2d'])
-    : new Set(['NW2d', 'NW3d']);
-  const seen = new Set([`${primary.volume} ${primaryReporter} ${primary.page}`]);
-  const parts = [];
+function wantedReportersFor(primaryReporter) {
+  if (primaryReporter === 'Mich' || primaryReporter === 'Mich App') return new Set(['NW3d', 'NW2d', 'NW']);
+  if (primaryReporter === 'US') return new Set(['S Ct', 'L Ed 2d', 'L Ed']);
+  return new Set();
+}
 
-  for (const cluster of clusters || []) {
-    for (const citation of cluster.citations || []) {
-      const reporter = normalizeReporter(citation.reporter);
-      const part = citationPart(citation);
-      if (!part || !wantedReporters.has(reporter) || seen.has(part)) continue;
-      seen.add(part);
-      parts.push(part);
-    }
+function parseCitationString(value) {
+  if (typeof value !== 'string') return null;
+  const match = value.match(/\b(\d{1,5})\s+([A-Za-z. ]+?)\s+(\d{1,6}[A-Za-z]?)\b/);
+  if (!match) return null;
+  return { volume: match[1], reporter: match[2].trim(), page: match[3] };
+}
+
+function collectCitationObjects(value, citations = [], depth = 0) {
+  if (depth > 8 || value == null) return citations;
+  if (typeof value === 'string') {
+    const parsed = parseCitationString(value);
+    if (parsed) citations.push(parsed);
+    return citations;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectCitationObjects(item, citations, depth + 1);
+    return citations;
+  }
+  if (typeof value !== 'object') return citations;
+
+  if (value.volume && value.reporter && value.page) {
+    citations.push({
+      volume: String(value.volume),
+      reporter: String(value.reporter),
+      page: String(value.page),
+    });
   }
 
-  return parts.join('; ');
+  for (const key of ['citations', 'normalized_citations', 'parallel_citations', 'clusters', 'results', 'opinions', 'citations_resolved']) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      collectCitationObjects(value[key], citations, depth + 1);
+    }
+  }
+  return citations;
+}
+
+function wantedParallelCitations(primary, courtListenerPayload) {
+  const primaryReporter = normalizeReporter(primary.reporter);
+  const wantedReporters = wantedReportersFor(primaryReporter);
+  if (!wantedReporters.size) return '';
+
+  const seen = new Set([`${primary.volume} ${primaryReporter} ${primary.page}`]);
+  const partsByReporter = new Map();
+
+  for (const citation of collectCitationObjects(courtListenerPayload)) {
+    const reporter = normalizeReporter(citation.reporter);
+    const part = citationPart(citation);
+    if (!part || !wantedReporters.has(reporter) || seen.has(part)) continue;
+    seen.add(part);
+    if (!partsByReporter.has(reporter)) partsByReporter.set(reporter, part);
+  }
+
+  return REPORTER_PRIORITY
+    .filter((reporter) => partsByReporter.has(reporter))
+    .map((reporter) => partsByReporter.get(reporter))
+    .join('; ');
+}
+
+function citationString(citation) {
+  return `${citation.volume} ${courtListenerReporter(citation.reporter)} ${citation.page}`;
 }
 
 async function lookupCitation(citation) {
-  const form = new URLSearchParams();
-  form.set('volume', citation.volume);
-  form.set('reporter', citation.reporter);
-  form.set('page', citation.page);
-
-  const headers = {
+  const baseHeaders = {
     Accept: 'application/json',
-    'Content-Type': 'application/x-www-form-urlencoded',
   };
-  if (TOKEN) headers.Authorization = `Token ${TOKEN}`;
+  if (TOKEN) baseHeaders.Authorization = `Token ${TOKEN}`;
 
-  const response = await fetch(COURTLISTENER_ENDPOINT, {
+  const jsonResponse = await fetch(COURTLISTENER_ENDPOINT, {
     method: 'POST',
-    headers,
-    body: form.toString(),
+    headers: {
+      ...baseHeaders,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ text: citationString(citation) }),
   });
-  const data = await response.json().catch(() => []);
-  const first = Array.isArray(data) ? data[0] : null;
-  const parallelCitation = first?.status === 200 ? wantedParallelCitations(citation, first.clusters) : '';
+  let response = jsonResponse;
+  let payload = await response.json().catch(() => null);
+
+  if (!response.ok && (response.status === 400 || response.status === 415 || response.status === 422)) {
+    const form = new URLSearchParams();
+    form.set('volume', citation.volume);
+    form.set('reporter', courtListenerReporter(citation.reporter));
+    form.set('page', citation.page);
+    response = await fetch(COURTLISTENER_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        ...baseHeaders,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: form.toString(),
+    });
+    payload = await response.json().catch(() => null);
+  }
+
+  const first = Array.isArray(payload) ? payload[0] : payload;
+  const status = first?.status || response.status;
+  const parallelCitation = response.ok && (!first?.status || first.status === 200)
+    ? wantedParallelCitations(citation, payload)
+    : '';
 
   return {
     id: citation.id,
     citation: `${citation.volume} ${citation.reporter} ${citation.page}`,
-    status: first?.status || response.status,
+    status,
     error: first?.error_message || '',
     normalizedCitations: first?.normalized_citations || [],
     parallelCitation,
@@ -167,4 +277,11 @@ module.exports = async function handler(request, response) {
       error: error instanceof Error ? error.message : 'Parallel citation lookup failed.',
     });
   }
+};
+
+module.exports._private = {
+  assertCitationOnlyPayload,
+  collectCitationObjects,
+  normalizeReporter,
+  wantedParallelCitations,
 };

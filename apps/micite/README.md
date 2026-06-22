@@ -14,7 +14,7 @@ Current table options:
 - Incorrect or corrected citations only.
 - Table of authorities with page indicators when page breaks are present in the supplied plain text.
 
-The parallel-citation option controls whether supplied parallel citations to regional reporters and `L Ed` are retained in corrected output. The hosted web app can optionally generate missing parallel citation suggestions through CourtListener by sending only extracted citation identifiers: volume, reporter, and page.
+The parallel-citation option controls whether supplied parallel citations to regional reporters and `L Ed` are retained in corrected output. The hosted web app can optionally generate missing parallel citation suggestions through a same-origin CourtListener supplier by sending only extracted citation identifiers: volume, reporter, and page. Users do not need CourtListener accounts or tokens.
 
 Case-name abbreviation checking includes the full Appendix 5 case-name abbreviation list from the Michigan Appellate Opinion Manual. Most entries are safe deterministic rewrites inside detected case names. Context-dependent entries, including `General`, `Michigan`, and `United States`, are flagged for review rather than automatically rewritten because Appendix 5 contains exceptions for those terms.
 
@@ -28,7 +28,7 @@ Future work should incorporate the entire Michigan Appellate Opinion Manual as s
 - Optional CourtListener parallel-citation lookup sends only extracted case-citation identifiers, not full document text.
 - There is no database, account system, telemetry script, third-party script, or server-side upload handler.
 - Static assets are bundled locally.
-- Vercel serves static files and the optional same-origin parallel-citation lookup endpoint; user document text is not sent to Vercel for formatting.
+- Vercel serves static files and the optional same-origin parallel-citation supplier endpoint; user document text is not sent to Vercel for formatting.
 
 ## Local Use
 
@@ -70,9 +70,9 @@ Recommended settings:
 - Output directory: `public`
 - Install command: `npm install`
 - Analytics: disabled unless confirmed not to collect document content
-- Environment variable: `COURTLISTENER_API_TOKEN`, stored only in Vercel project settings
+- Environment variable: `COURTLISTENER_API_TOKEN`, stored only in Vercel project settings, for the optional CourtListener parallel-citation supplier
 
-Do not add serverless functions that receive document text unless the privacy model is revisited. The existing parallel-citation endpoint must accept only citation-only payloads and reject free-form `text`, `document`, `body`, `content`, `paragraph`, `sentence`, `file`, `html`, or `markdown` fields.
+Do not add serverless functions that receive document text unless the privacy model is revisited. The existing parallel-citation supplier endpoint must accept only citation-only payloads and reject free-form `text`, `document`, `body`, `content`, `paragraph`, `sentence`, `file`, `html`, or `markdown` fields.
 
 Before deploying, run:
 
