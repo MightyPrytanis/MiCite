@@ -6,7 +6,7 @@ Current Version: **1.0.0-Beta**
 
 The manual sets the standards used by the Michigan Supreme Court Office of the Reporter of Decisions when editing appellate opinions for publication. It is not mandatory for state court practice, unlike the former Michigan Uniform System of Citation it replaced, but adhering to it signals professional care and jurisdictional fluency.
 
-**Important limitation:** MiCite is primarily a citation-formatting tool. Optional citation-only CourtListener lookup may provide limited reporter-citation existence and case-name/caption warnings for cases. MiCite does not verify quoted material or legal inferences, or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited.
+**Important limitation:** MiCite is primarily a citation-formatting tool. Optional citation-only CourtListener lookup for parallel citations includes an experimental/prototype check that may report whether a reporter citation was found and may flag apparent case-name/caption mismatches when CourtListener returns usable metadata. MiCite does not verify quoted material or legal inferences, or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited.
 
 ## Deployment
 
@@ -76,7 +76,7 @@ The static interface can generate three table views:
 
 The current checker is not yet a complete formatter for every authority category discussed in the manual. Current high-confidence coverage focuses on Michigan and common federal case citations, Michigan statutes, Michigan Court Rules, Michigan Rules of Evidence, selected reporter punctuation, semicolon-separated parallel citations, `Id.` citations, case-name italics, and Appendix 5 case-name abbreviations.
 
-**MiCite does not verify whether an authority remains good law, has been correctly quoted, accurately supports a proposition, or has been overruled, superseded, or otherwise limited. Optional citation-only CourtListener lookup may provide limited reporter-citation existence and case-name/caption warnings for cases, but it is not a substitute for legal research.**
+**MiCite does not verify whether an authority remains good law, has been correctly quoted, accurately supports a proposition, or has been overruled, superseded, or otherwise limited. Optional citation-only CourtListener lookup includes an experimental/prototype reporter-citation and case-name/caption check for cases, but it is not a substitute for legal research.**
 
 Users should treat MiCite as an educational tool, but should not rely on it for verification of authorities, quotations, and legal propositions before filing or relying on any document. 
 

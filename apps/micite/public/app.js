@@ -616,19 +616,19 @@ async function supplyParallelCitations() {
       finding.parallelLookup = result;
       if (result?.found) {
         verified += 1;
-        addLookupIssue(finding, 'CourtListener found a case for this reporter citation.');
+        addLookupIssue(finding, 'Prototype lookup note: CourtListener returned data for this reporter citation.');
         const localCaseName = caseNameForFinding(finding);
         if (Array.isArray(result.caseNames) && result.caseNames.length && !caseNamesLikelyMatch(localCaseName, result.caseNames)) {
           verificationWarnings += 1;
           addLookupIssue(
             finding,
-            'CourtListener returned a different case name or caption; verify the case name and citation before filing.',
+            'Prototype lookup note: CourtListener returned a different case name or caption; verify the case name and citation before filing.',
             true,
           );
         }
       } else if (result) {
         verificationWarnings += 1;
-        addLookupIssue(finding, 'CourtListener could not verify this reporter citation.', true);
+        addLookupIssue(finding, 'Prototype lookup note: CourtListener did not return matching data for this reporter citation.', true);
       }
 
       if (result?.parallelCitation) {
@@ -640,9 +640,9 @@ async function supplyParallelCitations() {
     rebuildOutputs(latestReport);
     render(latestReport);
     if (added) {
-      parallelStatus.textContent = `Added ${added} parallel citation suggestion${added === 1 ? '' : 's'} and checked ${verified} reporter citation${verified === 1 ? '' : 's'}. Verify before filing.`;
+      parallelStatus.textContent = `Added ${added} parallel citation suggestion${added === 1 ? '' : 's'}. Prototype lookup notes may appear in the results. Verify before filing.`;
     } else if (verified && !verificationWarnings) {
-      parallelStatus.textContent = `No missing parallels were returned, but CourtListener found ${verified} reporter citation${verified === 1 ? '' : 's'}.`;
+      parallelStatus.textContent = 'No missing parallels were returned. Prototype lookup notes may appear in the results.';
     } else if (payload.results.some((result) => result?.error || Number(result?.status) >= 400)) {
       parallelStatus.textContent = 'MiCite could not retrieve parallel citations right now. No document text was sent.';
     } else {
