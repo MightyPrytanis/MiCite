@@ -6,7 +6,7 @@
   "license": "LicenseRef-FSL-1.1-ALv2",
   "scripts": {
     "start": "npx serve public --listen 5177",
-    "build": "node scripts/build-local-package.mjs",
+    "build": "node scripts/verify-public.mjs",
     "package:local": "node scripts/build-local-package.mjs"
   },
   "devDependencies": {
