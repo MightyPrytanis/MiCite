@@ -263,7 +263,9 @@ module.exports = async function handler(request, response) {
     const payload = await readJson(request);
     const citations = assertCitationOnlyPayload(payload);
     if (!TOKEN) {
-      return sendJson(response, 503, { error: 'CourtListener lookup is not configured.' });
+      return sendJson(response, 503, {
+        error: 'Parallel citation lookup is not available yet. No document text was sent.',
+      });
     }
     const results = [];
 

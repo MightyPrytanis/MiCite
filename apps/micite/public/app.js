@@ -547,11 +547,16 @@ async function generateMissingParallels() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ citations }),
     });
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || 'Parallel citation lookup failed.');
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(payload?.error || 'MiCite could not retrieve parallel citations right now. No document text was sent.');
+    }
+    if (!Array.isArray(payload?.results)) {
+      throw new Error('MiCite could not read the parallel-citation response. No document text was sent.');
+    }
 
     let added = 0;
-    const byId = new Map((payload.results || []).map((result) => [result.id, result]));
+    const byId = new Map(payload.results.map((result) => [result.id, result]));
     for (const finding of latestReport.findings) {
       const result = byId.get(`${finding.start}-${finding.end}`);
       if (!result?.parallelCitation) continue;
@@ -562,11 +567,17 @@ async function generateMissingParallels() {
     }
     rebuildOutputs(latestReport);
     render(latestReport);
-    parallelStatus.textContent = added
-      ? `Added ${added} CourtListener parallel citation suggestion${added === 1 ? '' : 's'}. Verify before filing.`
-      : 'CourtListener did not return missing parallel citations for the extracted citations.';
+    if (added) {
+      parallelStatus.textContent = `Added ${added} CourtListener parallel citation suggestion${added === 1 ? '' : 's'}. Verify before filing.`;
+    } else if (payload.results.some((result) => result?.error || Number(result?.status) >= 400)) {
+      parallelStatus.textContent = 'MiCite could not retrieve parallel citations right now. No document text was sent.';
+    } else {
+      parallelStatus.textContent = 'No matching parallel citations were found for the extracted citations.';
+    }
   } catch (error) {
-    parallelStatus.textContent = error instanceof Error ? error.message : 'Parallel citation lookup failed.';
+    parallelStatus.textContent = error instanceof Error
+      ? error.message
+      : 'MiCite could not retrieve parallel citations right now. No document text was sent.';
   } finally {
     generateParallels.disabled = !lookupParallels?.checked;
   }
@@ -670,10 +681,22 @@ function render(report) {
     row.querySelector('.citation').textContent = finding.originalText;
 
     if (finding.ruleViolatedOrWarning) {
-      const message = document.createElement('div');
-      message.className = 'message';
-      message.textContent = finding.ruleViolatedOrWarning;
-      row.appendChild(message);
+      const messages = [...new Set((finding.issues || []).map((issue) => issue.message).filter(Boolean))];
+      if (messages.length > 1) {
+        const list = document.createElement('ul');
+        list.className = 'message-list';
+        for (const item of messages) {
+          const li = document.createElement('li');
+          li.textContent = item;
+          list.appendChild(li);
+        }
+        row.appendChild(list);
+      } else {
+        const message = document.createElement('div');
+        message.className = 'message';
+        message.textContent = messages[0] || finding.ruleViolatedOrWarning;
+        row.appendChild(message);
+      }
     }
     if (finding.suggestedCorrection && finding.suggestedCorrection !== finding.originalText) {
       const suggestion = document.createElement('div');

@@ -549,6 +549,13 @@ textarea {
 }
 
 .message { color: var(--warn); font-size: 13px; }
+.message-list {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  color: var(--warn);
+  font-size: 13px;
+}
+.message-list li { margin: 3px 0; }
 .suggestion { margin-top: 6px; color: var(--ink-2); font-size: 13px; }
 
 footer {
