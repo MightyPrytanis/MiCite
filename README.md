@@ -2,7 +2,7 @@
 
 Current Version: **1.0.0-Beta**
 
-**MiCite** is a lightweight, deterministic formatting tool for legal source citations in legal writing filed in or prepared for Michigan courts, where guidelines differ from the Bluebook® and other citation systems. It follows the guidelines published in the Michigan Appellate Opinion Manual, https://www.courts.michigan.gov/4a4a11/siteassets/publications/manuals/msc/miappopmanual.pdf
+**MiCite** is a lightweight, deterministic formatting tool for source citations in legal writing filed in or prepared for Michigan courts, where guidelines differ from the Bluebook® and other citation systems. It follows the guidelines published in the Michigan Appellate Opinion Manual, https://www.courts.michigan.gov/4a4a11/siteassets/publications/manuals/msc/miappopmanual.pdf
 
 The manual sets the standards used by the Michigan Supreme Court Office of the Reporter of Decisions when editing appellate opinions for publication. It is not mandatory for state court practice, unlike the former Michigan Uniform System of Citation it replaced, but adhering to it signals professional care and jurisdictional fluency.
 
@@ -16,7 +16,7 @@ Static deployable app: `apps/micite`. This app gives users a choice between a br
 
 The local package is cross-platform because it runs in the user's browser: Windows on Intel/AMD, macOS on Intel, and macOS on Apple silicon. No native installer or architecture-specific binary is required.
 
-For Vercel deployment, the public privacy identifies Vercel as the hosting provider and link to Vercel's security documentation after the deployment is configured. Future versions of MiCite may include security enhancements like TLS 1.3, DDoS protection, specific compliance certifications, and other features, but will not document or claim such enhancements until they have been properly tested and verified for the deployed project.
+Vercel's security documentation is located at <https://vercel.com/security>. Future versions of MiCite may include security enhancements like TLS 1.3, DDoS protection, specific compliance certifications, and other features, but will not document or claim such enhancements until they have been properly tested and verified for the deployed project.
 
 The current `apps/micite` deployment is implemented as a browser-local checker with an optional same-origin parallel-citation supplier endpoint. The endpoint rejects free-form text/document payloads and accepts only extracted citation identifiers. MiCite has no account system, no database, and no third-party scripts on the checker page. The local package ZIP is generated at `apps/micite/public/downloads/micite-local.zip`.
 
