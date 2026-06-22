@@ -50,6 +50,11 @@ const parallel = handler._private.wantedParallelCitations(
 );
 assert.equal(parallel, '597 NW2d 28');
 
+const names = [...handler._private.collectCaseNames({
+  clusters: [{ case_name: 'Smith v Globe Life Insurance Co' }],
+})];
+assert.deepEqual(names, ['Smith v Globe Life Insurance Co']);
+
 let calls = 0;
 globalThis.fetch = async (_url, options) => {
   calls += 1;
@@ -74,7 +79,7 @@ globalThis.fetch = async (_url, options) => {
       clusters: [{ citations: [
         { volume: '460', reporter: 'Mich.', page: '446' },
         { volume: '597', reporter: 'N.W.2d', page: '28' },
-      ] }],
+      ], case_name: 'Smith v Globe Life Insurance Co' }],
       normalized_citations: ['460 Mich. 446'],
     }]),
   };
@@ -85,7 +90,9 @@ const response = await invoke({
 });
 
 assert.equal(response.statusCode, 200);
+assert.equal(response.body.results[0].found, true);
 assert.equal(response.body.results[0].parallelCitation, '597 NW2d 28');
+assert.deepEqual(response.body.results[0].caseNames, ['Smith v Globe Life Insurance Co']);
 assert.equal(calls, 2);
 
 console.log('Parallel citation supplier tests passed.');

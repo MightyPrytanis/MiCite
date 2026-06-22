@@ -36,11 +36,11 @@
 
         <h3>What does MiCite check?</h3>
         <p>MiCite is limited to citation formatting. It focuses on reporter abbreviations, punctuation, spacing, court-rule formatting, statutory citation formatting, and citation forms commonly used in Michigan legal writing.</p>
-        <p>MiCite does not validate the existence of the cited case or source, verify that quoted material or legal inferences are accurate, or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited. Additional functions may be added later, but MiCite is currently a straightforward formatting tool, not a cite-checking or legal-research tool.</p>
+        <p>MiCite is not a full cite-checking or legal-research tool. When parallel citation formatting is on, MiCite may use citation-only CourtListener lookup to see whether a reporter citation is found and, when returned metadata permits it, flag a likely case-name mismatch. MiCite does not verify that quoted material or legal inferences are accurate or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited.</p>
         <p>The Michigan Appellate Opinion Manual contains broader guidance about grammar, quotations, capitalization, numbers, opinion structure, and legal writing style. Most of that is outside the current scope of MiCite.</p>
 
         <h3>What does MiCite not check?</h3>
-        <p>MiCite does not tell you whether a case, statute, rule, or other authority exists or is still good law. It does not Shepardize® citations, use KeyCite®, update, validate, or rank authorities. It does not confirm that a quotation is accurate or decide whether a citation supports the sentence where it appears.</p>
+        <p>MiCite does not tell you whether a case, statute, rule, or other authority is still good law. It does not Shepardize® citations, use KeyCite®, update, validate, or rank authorities. Optional CourtListener lookup may provide limited reporter-citation existence and case-name/caption warnings for cases, but it does not confirm that a quotation is accurate or decide whether a citation supports the sentence where it appears.</p>
         <p>MiCite also does not guarantee that every possible citation format will be detected. Legal citations vary, and some citations may be unusual, incomplete, ambiguous, or outside the current scope of the tool.</p>
 
         <h3>Does MiCite use AI?</h3>
@@ -62,7 +62,7 @@
         <p>MiCite is also not intended to be a full checker for the former Michigan Uniform System of Citation. The Michigan Supreme Court rescinded that system in Administrative Order No. 2014-22, entered November 5, 2014. Older Michigan briefs, opinions, forms, and office templates may still contain citation forms influenced by that former system.</p>
 
         <h3>Does Michigan require parallel citations?</h3>
-        <p>Michigan citation practice has changed over time, and the answer can depend on the type of authority and the context. MiCite may help identify and format parallel citations where applicable, but users should confirm the current rule, order, manual provision, or local practice before relying on any citation format in a filing.</p>
+        <p>Michigan citation practice has changed over time, and the answer can depend on the type of authority and the context. The “Format with parallel citations” switch tells MiCite to keep supplied parallels and, in the hosted app, try to supply missing parallels from CourtListener. Users should confirm the current rule, order, manual provision, or local practice before relying on any citation format in a filing.</p>
 
         <h3>Why did MiCite miss a citation?</h3>
         <p>A citation may be missed because it is incomplete, unusually formatted, contains a typo, uses a reporter or source not yet supported, or appears in a form that the app does not currently recognize. Expanding coverage and improving detection are ongoing goals.</p>

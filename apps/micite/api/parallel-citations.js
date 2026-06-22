@@ -178,6 +178,29 @@ function collectCitationObjects(value, citations = [], depth = 0) {
   return citations;
 }
 
+function collectCaseNames(value, names = new Set(), depth = 0) {
+  if (depth > 8 || value == null) return names;
+  if (Array.isArray(value)) {
+    for (const item of value) collectCaseNames(item, names, depth + 1);
+    return names;
+  }
+  if (typeof value !== 'object') return names;
+
+  for (const key of ['caseName', 'case_name', 'caseNameFull', 'case_name_full', 'caseNameShort', 'case_name_short', 'caption', 'caption_full', 'name']) {
+    const valueForKey = value[key];
+    if (typeof valueForKey === 'string' && /[A-Za-z]/.test(valueForKey)) {
+      names.add(valueForKey.trim());
+    }
+  }
+
+  for (const key of ['clusters', 'results', 'opinions', 'citations_resolved', 'sub_opinions', 'absolute_url']) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      collectCaseNames(value[key], names, depth + 1);
+    }
+  }
+  return names;
+}
+
 function wantedParallelCitations(primary, courtListenerPayload) {
   const primaryReporter = normalizeReporter(primary.reporter);
   const wantedReporters = wantedReportersFor(primaryReporter);
@@ -239,7 +262,9 @@ async function lookupCitation(citation) {
 
   const first = Array.isArray(payload) ? payload[0] : payload;
   const status = first?.status || response.status;
-  const parallelCitation = response.ok && (!first?.status || first.status === 200)
+  const returnedCitations = collectCitationObjects(payload);
+  const found = response.ok && Boolean(first) && (!first.status || first.status === 200) && returnedCitations.length > 0;
+  const parallelCitation = found
     ? wantedParallelCitations(citation, payload)
     : '';
 
@@ -247,8 +272,10 @@ async function lookupCitation(citation) {
     id: citation.id,
     citation: `${citation.volume} ${citation.reporter} ${citation.page}`,
     status,
+    found,
     error: first?.error_message || '',
     normalizedCitations: first?.normalized_citations || [],
+    caseNames: [...collectCaseNames(payload)].slice(0, 5),
     parallelCitation,
   };
 }
@@ -284,6 +311,7 @@ module.exports = async function handler(request, response) {
 module.exports._private = {
   assertCitationOnlyPayload,
   collectCitationObjects,
+  collectCaseNames,
   normalizeReporter,
   wantedParallelCitations,
 };

@@ -185,8 +185,7 @@ const copyText = document.querySelector('#copy-text');
 const copyHtml = document.querySelector('#copy-html');
 const copyTable = document.querySelector('#copy-table');
 const includeParallels = document.querySelector('#include-parallels');
-const lookupParallels = document.querySelector('#lookup-parallels');
-const generateParallels = document.querySelector('#generate-parallels');
+const parallelSwitchLabel = document.querySelector('.switch-label');
 const parallelStatus = document.querySelector('#parallel-status');
 const tableMode = document.querySelector('#table-mode');
 const generatedTable = document.querySelector('#generated-table');
@@ -502,6 +501,35 @@ function courtListenerReporter(reporter) {
   }[reporter] || reporter;
 }
 
+function caseNameForFinding(finding) {
+  const correctedCitation = displayCorrectionFor(finding, { includeParallelCitations: false });
+  const commaIndex = correctedCitation.indexOf(',');
+  if (commaIndex < 0) return '';
+  return correctedCitation.slice(0, commaIndex).trim();
+}
+
+function normalizeCaseNameForCompare(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/\bversus\b/g, ' v ')
+    .replace(/\bv\.\b/g, ' v ')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\b(the|inc|corp|co|company|ins|insurance|mfg|manufacturing|of|and)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function caseNamesLikelyMatch(localName, returnedNames = []) {
+  const local = normalizeCaseNameForCompare(localName);
+  if (!local || !returnedNames.length) return true;
+  return returnedNames.some((name) => {
+    const remote = normalizeCaseNameForCompare(name);
+    if (!remote) return false;
+    return remote.includes(local) || local.includes(remote);
+  });
+}
+
 function parallelLookupRequests(report) {
   return report.findings
     .filter((finding) => ['michigan_case', 'federal_case'].includes(finding.citationType))
@@ -518,6 +546,27 @@ function addParallelCitation(citation, parallelCitation) {
   return `${citation.slice(0, -year.length)}; ${parallelCitation}${year}`;
 }
 
+function recomputeFindingStatus(finding) {
+  const issues = finding.issues || [];
+  finding.ruleViolatedOrWarning = [...new Set(issues.map((issue) => issue.message).filter(Boolean))].join(' ') || undefined;
+  const nonCompliantIssues = issues.filter((issue) => issue.suggestedCorrection || issue.verificationProblem);
+  finding.appearsCompliant = nonCompliantIssues.length === 0;
+  finding.status = nonCompliantIssues.length > 0 ? 'Review' : issues.length > 0 ? 'Note' : 'Compliant';
+}
+
+function addLookupIssue(finding, message, verificationProblem = false) {
+  finding.issues = finding.issues || [];
+  if (!finding.issues.some((issue) => issue.message === message)) {
+    finding.issues.push({
+      rule: 'CourtListener citation-only lookup',
+      message,
+      safeToAutoCorrect: false,
+      verificationProblem,
+    });
+  }
+  recomputeFindingStatus(finding);
+}
+
 function rebuildOutputs(report) {
   const text = report.sourceText || input.value;
   const replacements = report.findings
@@ -531,15 +580,18 @@ function rebuildOutputs(report) {
   report.tables = buildTables(report.findings, currentOptions());
 }
 
-async function generateMissingParallels() {
-  if (!latestReport || !lookupParallels?.checked) return;
-  const citations = parallelLookupRequests(latestReport);
-  if (!citations.length) {
-    parallelStatus.textContent = 'No missing parallel citations found for lookup.';
+async function supplyParallelCitations() {
+  if (!latestReport || includeParallels?.checked === false) return;
+  if (location.protocol === 'file:') {
+    parallelStatus.textContent = 'Offline local mode: supplied parallel citations can be kept or omitted, but CourtListener lookup is available only in the hosted web app.';
     return;
   }
-  generateParallels.disabled = true;
-  parallelStatus.textContent = `Looking up ${citations.length} extracted citation${citations.length === 1 ? '' : 's'} only. No document text is sent.`;
+  const citations = parallelLookupRequests(latestReport);
+  if (!citations.length) {
+    parallelStatus.textContent = 'Parallel citation formatting is on. No missing parallel citations were found for lookup.';
+    return;
+  }
+  parallelStatus.textContent = `Looking up ${citations.length} extracted reporter citation${citations.length === 1 ? '' : 's'} only. No document text or case names are sent.`;
 
   try {
     const response = await fetch('/api/parallel-citations', {
@@ -556,30 +608,50 @@ async function generateMissingParallels() {
     }
 
     let added = 0;
+    let verified = 0;
+    let verificationWarnings = 0;
     const byId = new Map(payload.results.map((result) => [result.id, result]));
     for (const finding of latestReport.findings) {
       const result = byId.get(`${finding.start}-${finding.end}`);
-      if (!result?.parallelCitation) continue;
-      const baseCitation = displayCorrectionFor(finding, { includeParallelCitations: false });
-      finding.parallelSuggestion = addParallelCitation(baseCitation, result.parallelCitation);
       finding.parallelLookup = result;
-      added += 1;
+      if (result?.found) {
+        verified += 1;
+        addLookupIssue(finding, 'CourtListener found a case for this reporter citation.');
+        const localCaseName = caseNameForFinding(finding);
+        if (Array.isArray(result.caseNames) && result.caseNames.length && !caseNamesLikelyMatch(localCaseName, result.caseNames)) {
+          verificationWarnings += 1;
+          addLookupIssue(
+            finding,
+            'CourtListener returned a different case name or caption; verify the case name and citation before filing.',
+            true,
+          );
+        }
+      } else if (result) {
+        verificationWarnings += 1;
+        addLookupIssue(finding, 'CourtListener could not verify this reporter citation.', true);
+      }
+
+      if (result?.parallelCitation) {
+        const baseCitation = displayCorrectionFor(finding, { includeParallelCitations: false });
+        finding.parallelSuggestion = addParallelCitation(baseCitation, result.parallelCitation);
+        added += 1;
+      }
     }
     rebuildOutputs(latestReport);
     render(latestReport);
     if (added) {
-      parallelStatus.textContent = `Added ${added} CourtListener parallel citation suggestion${added === 1 ? '' : 's'}. Verify before filing.`;
+      parallelStatus.textContent = `Added ${added} parallel citation suggestion${added === 1 ? '' : 's'} and checked ${verified} reporter citation${verified === 1 ? '' : 's'}. Verify before filing.`;
+    } else if (verified && !verificationWarnings) {
+      parallelStatus.textContent = `No missing parallels were returned, but CourtListener found ${verified} reporter citation${verified === 1 ? '' : 's'}.`;
     } else if (payload.results.some((result) => result?.error || Number(result?.status) >= 400)) {
       parallelStatus.textContent = 'MiCite could not retrieve parallel citations right now. No document text was sent.';
     } else {
-      parallelStatus.textContent = 'No matching parallel citations were found for the extracted citations.';
+      parallelStatus.textContent = 'No matching parallel citations were found for the extracted reporter citations.';
     }
   } catch (error) {
     parallelStatus.textContent = error instanceof Error
       ? error.message
       : 'MiCite could not retrieve parallel citations right now. No document text was sent.';
-  } finally {
-    generateParallels.disabled = !lookupParallels?.checked;
   }
 }
 
@@ -712,7 +784,12 @@ function currentOptions() {
   return { includeParallelCitations: includeParallels?.checked !== false };
 }
 
-function check(applySafeCorrections = false) {
+function updateParallelSwitchLabel() {
+  if (parallelSwitchLabel) parallelSwitchLabel.textContent = includeParallels?.checked === false ? 'Off' : 'On';
+}
+
+async function check(applySafeCorrections = false, options = {}) {
+  updateParallelSwitchLabel();
   latestReport = checkText(input.value, applySafeCorrections, currentOptions());
   render(latestReport);
   apply.disabled = latestReport.noncompliant === 0;
@@ -720,8 +797,16 @@ function check(applySafeCorrections = false) {
   copyText.disabled = false;
   copyHtml.disabled = false;
   copyTable.disabled = false;
-  generateParallels.disabled = !lookupParallels?.checked || parallelLookupRequests(latestReport).length === 0;
   if (applySafeCorrections) input.value = latestReport.correctedText;
+  if (includeParallels?.checked === false) {
+    parallelStatus.textContent = 'Parallel citation formatting is off. MiCite will omit supplied parallel citations where it can do so safely.';
+    return;
+  }
+  if (options.skipParallelLookup) {
+    parallelStatus.textContent = 'Parallel citation formatting is on. Missing parallels are supplied from extracted reporter citations only when you check text.';
+    return;
+  }
+  await supplyParallelCitations();
 }
 
 async function copyFormatted() {
@@ -744,14 +829,13 @@ apply.addEventListener('click', () => check(true));
 copyText.addEventListener('click', () => navigator.clipboard?.writeText(corrected.value));
 copyHtml.addEventListener('click', () => copyFormatted());
 copyTable.addEventListener('click', () => navigator.clipboard?.writeText(generatedTable.innerText || ''));
-includeParallels?.addEventListener('change', () => check(false));
-lookupParallels?.addEventListener('change', () => {
-  generateParallels.disabled = !lookupParallels.checked || !latestReport || parallelLookupRequests(latestReport).length === 0;
-  parallelStatus.textContent = lookupParallels.checked
-    ? 'Everything stays local except the extracted citation identifiers needed for CourtListener lookup: volume, reporter, and page.'
-    : 'Everything is processed locally unless CourtListener lookup is enabled; then only extracted case-citation identifiers are exposed.';
+includeParallels?.addEventListener('change', () => {
+  updateParallelSwitchLabel();
+  parallelStatus.textContent = includeParallels.checked
+    ? 'Parallel citation formatting is on. Missing parallels are supplied from extracted reporter citations only: volume, reporter, and page.'
+    : 'Parallel citation formatting is off. MiCite will omit supplied parallel citations where it can do so safely.';
+  if (latestReport) check(false);
 });
-generateParallels?.addEventListener('click', () => generateMissingParallels());
 tableMode?.addEventListener('change', () => latestReport && renderTable(latestReport));
 download.addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(latestReport, null, 2)], { type: 'application/json' });
@@ -770,9 +854,7 @@ document.querySelector('#file').addEventListener('change', async (event) => {
 });
 
 if (location.protocol === 'file:') {
-  lookupParallels.disabled = true;
-  lookupParallels.checked = false;
-  generateParallels.disabled = true;
-  parallelStatus.textContent = 'Offline local mode: everything is processed locally. CourtListener lookup is available only in the hosted web app.';
+  parallelStatus.textContent = 'Offline local mode: supplied parallel citations can be kept or omitted, but CourtListener lookup is available only in the hosted web app.';
 }
-check(false);
+updateParallelSwitchLabel();
+check(false, { skipParallelLookup: true });

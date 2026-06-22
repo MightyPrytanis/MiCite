@@ -47,15 +47,11 @@
       <textarea id="input" aria-labelledby="input-heading" spellcheck="false">Brown v. Board of Education, 347 U.S. 483, 74 S. Ct. 686, 98 L. Ed. 873 (1954)</textarea>
 
       <div class="options-panel" aria-label="Citation options">
-        <label>
-          <input id="include-parallels" type="checkbox" checked />
-          Include supplied parallel citations to regional reporters and L Ed when available
+        <label class="switch-row">
+          <span>Format with parallel citations</span>
+          <input id="include-parallels" type="checkbox" checked role="switch" />
+          <span class="switch-label" aria-hidden="true">On</span>
         </label>
-        <label>
-          <input id="lookup-parallels" type="checkbox" />
-          Look up missing parallel citations with CourtListener
-        </label>
-        <button id="generate-parallels" class="secondary" type="button" disabled>Suggest missing parallels</button>
         <label>
           Table:
           <select id="table-mode">
@@ -64,7 +60,7 @@
             <option value="toa">Table of authorities</option>
           </select>
         </label>
-        <p id="parallel-status">Everything is processed locally except optional CourtListener parallel lookup, which exposes only the extracted case-citation identifiers needed for lookup: volume, reporter, and page.</p>
+        <p id="parallel-status">When parallel citations are on, MiCite keeps supplied parallels and, in the hosted app, looks up missing parallels by sending only extracted reporter citations: volume, reporter, and page.</p>
       </div>
 
       <div class="section-head">
