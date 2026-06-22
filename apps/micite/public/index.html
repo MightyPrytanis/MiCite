@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <title>MiCite</title>
+  <meta name="description" content="MiCite is a deterministic Michigan legal citation-formatting tool with private web and local-install modes." />
+  <link rel="icon" type="image/png" href="assets/micite-icon.png" />
+  <link rel="apple-touch-icon" href="assets/micite-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <img class="brand-logo" src="assets/micite-logo.png" alt="MiCite" />
+      <div>
+        <h1>Free Michigan Legal Citation Formatting Tool</h1>
+        <p>Choose browser-local web use or a fully local install.</p>
+      </div>
+    </div>
+    <nav aria-label="Utility">
+      <a href="help.html">Help / FAQ</a>
+      <a href="privacy.html">Security & Privacy</a>
+      <a href="terms.html">Terms</a>
+      <button type="button" data-share-micite>Share MiCite</button>
+      <a href="https://square.link/u/8LB1IjwM?src=embed" target="_blank" rel="noreferrer">Support MiCite</a>
+    </nav>
+  </header>
+
+  <main class="choice-shell">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">Free Michigan Legal Citation Formatting Tool</p>
+        <h2>Private citation-formatting review, your way.</h2>
+        <p>
+          MiCite is deterministic citation-formatting software. It does not call an LLM,
+          train a model, or send document text to a remote formatting server.
+        </p>
+      </div>
+      <div class="landing-tabs-shell">
+        <div class="landing-tabs" role="tablist" aria-label="Choose how to use MiCite">
+          <button id="tab-web" type="button" role="tab" aria-controls="panel-web" aria-selected="true" data-landing-tab="web">Run Web App</button>
+          <button id="tab-local" type="button" role="tab" aria-controls="panel-local" aria-selected="false" tabindex="-1" data-landing-tab="local">Install Locally</button>
+        </div>
+
+        <article id="panel-web" class="choice-card landing-panel" role="tabpanel" aria-labelledby="tab-web" data-landing-panel="web">
+          <h3>Run the web app</h3>
+          <p>
+            Open MiCite immediately in this browser. Citation-formatting review runs in the browser, with no account,
+            database, or document-upload server.
+          </p>
+          <a class="button-link" href="app.html">Run MiCite</a>
+        </article>
+
+        <article id="panel-local" class="choice-card landing-panel" role="tabpanel" aria-labelledby="tab-local" data-landing-panel="local" hidden>
+          <h3>Install or download locally</h3>
+          <p>
+            Add MiCite to your device from the browser, or download a self-contained ZIP for an offline copy. No terminal
+            or command line required.
+          </p>
+          <p class="install-status">Works on Windows and Mac, including Intel Macs and Apple silicon Macs.</p>
+          <button id="install-pwa" class="button-link" type="button">Install MiCite</button>
+          <a class="button-link secondary" href="downloads/micite-local.zip" download>Download offline ZIP</a>
+          <p id="install-status" class="install-status">If the install button is unavailable, use your browser menu and choose Install App.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="security-band" aria-labelledby="security-heading">
+      <h2 id="security-heading">Both Modes Are Designed For Confidential Legal Work</h2>
+      <div class="security-grid">
+        <div>
+          <h3>Web App</h3>
+          <ul>
+            <li>Static Vercel/GitHub deployment.</li>
+            <li>Core formatting review runs in the browser.</li>
+            <li>Optional parallel-citation lookup sends only extracted case-citation identifiers.</li>
+            <li>No account system or database.</li>
+            <li>No third-party scripts on the checker page.</li>
+            <li>Document text and surrounding legal context remain in browser memory unless the user copies or downloads them.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Local Install</h3>
+          <ul>
+            <li>Runs from local files after unzipping.</li>
+            <li>Works without a hosted processing service.</li>
+            <li>Uses bundled logo and icon assets.</li>
+            <li>No telemetry, model training, or required remote citation API.</li>
+            <li>No command line or installer required.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <img class="footer-logo" src="assets/cognisint-logo-horizontal-reversed.png" alt="Cognisint" />
+    <div class="footer-warning">
+      <strong>MiCite checks citation format only.</strong> It does not validate the existence of a cited case or source, verify quotations or legal inferences, or determine whether an authority has been overruled, superseded, or otherwise limited. MiCite is a formatting tool, not a cite-checking or legal-research tool.
+    </div>
+    <p>
+      MiCite is a free service of
+      <a href="https://cognisint.com" target="_blank" rel="noreferrer">Cognisint LLC</a>,
+      shared by the creator under a
+      <a href="https://fsl.software" target="_blank" rel="noreferrer">Functional Source License</a>.
+      It is not legal advice. <strong>Accuracy is not guaranteed and results may contain errors; please see our
+      <a href="terms.html">Terms of Use</a> for more information.</strong>
+    </p>
+  </footer>
+  <script src="share.js"></script>
+  <script src="landing.js"></script>
+  <script src="install.js"></script>
+</body>
+</html>

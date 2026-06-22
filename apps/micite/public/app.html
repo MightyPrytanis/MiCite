@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <title>MiCite</title>
+  <meta name="description" content="MiCite is a free deterministic Michigan legal citation format checker." />
+  <link rel="icon" type="image/png" href="assets/micite-icon.png" />
+  <link rel="apple-touch-icon" href="assets/micite-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <img class="brand-logo" src="assets/micite-logo.png" alt="MiCite" />
+      <div>
+        <h1>Free Michigan Legal Citation Formatting Tool</h1>
+        <p>
+          Low-risk, privacy-first review and correction for filings in Michigan courts, based on the citation guidelines
+          in the
+          <a class="header-inline-link" href="https://www.courts.michigan.gov/4a4a11/siteassets/publications/manuals/msc/miappopmanual.pdf" target="_blank" rel="noreferrer">Michigan Appellate Opinion Manual</a>.
+        </p>
+      </div>
+    </div>
+    <nav aria-label="Utility">
+      <a href="help.html">Help / FAQ</a>
+      <a href="privacy.html">Security & Privacy</a>
+      <a href="terms.html">Terms</a>
+      <button type="button" data-share-micite>Share MiCite</button>
+      <a href="https://square.link/u/8LB1IjwM?src=embed" target="_blank" rel="noreferrer">Support MiCite</a>
+    </nav>
+  </header>
+
+  <main class="app-shell">
+    <section class="workspace" aria-labelledby="input-heading">
+      <div class="section-head">
+        <h2 id="input-heading">Input</h2>
+        <div class="toolbar">
+          <label class="file-label" for="file">Upload TXT/MD</label>
+          <input id="file" type="file" accept=".txt,.md,text/plain,text/markdown" />
+          <button id="check" type="button">Check</button>
+          <button id="apply" class="secondary" type="button" disabled>Apply safe corrections</button>
+        </div>
+      </div>
+      <textarea id="input" aria-labelledby="input-heading" spellcheck="false">Brown v. Board of Education, 347 U.S. 483, 74 S. Ct. 686, 98 L. Ed. 873 (1954)</textarea>
+
+      <div class="options-panel" aria-label="Citation options">
+        <label>
+          <input id="include-parallels" type="checkbox" checked />
+          Include supplied parallel citations to regional reporters and L Ed when available
+        </label>
+        <label>
+          <input id="lookup-parallels" type="checkbox" />
+          Look up missing parallel citations with CourtListener
+        </label>
+        <button id="generate-parallels" class="secondary" type="button" disabled>Suggest missing parallels</button>
+        <label>
+          Table:
+          <select id="table-mode">
+            <option value="all">All citations with corrections if any</option>
+            <option value="incorrect">Incorrect and corrected citations only</option>
+            <option value="toa">Table of authorities</option>
+          </select>
+        </label>
+        <p id="parallel-status">Everything is processed locally except optional CourtListener parallel lookup, which exposes only the extracted case-citation identifiers needed for lookup: volume, reporter, and page.</p>
+      </div>
+
+      <div class="section-head">
+        <h2 id="corrected-heading">Corrected Plain Text</h2>
+        <button id="copy-text" class="secondary" type="button" disabled>Copy</button>
+      </div>
+      <textarea id="corrected" aria-labelledby="corrected-heading" spellcheck="false" readonly></textarea>
+
+      <div class="section-head">
+        <h2 id="formatted-heading">Formatted Output</h2>
+        <button id="copy-html" class="secondary" type="button" disabled>Copy formatted</button>
+      </div>
+      <div id="formatted" class="formatted-output" aria-labelledby="formatted-heading" aria-live="polite"></div>
+
+      <div class="section-head">
+        <h2 id="table-heading">Generated Table</h2>
+        <button id="copy-table" class="secondary" type="button" disabled>Copy table</button>
+      </div>
+      <div id="generated-table" class="generated-table" aria-labelledby="table-heading"></div>
+    </section>
+
+    <section class="report" aria-labelledby="report-heading">
+      <div class="section-head">
+        <h2 id="report-heading">Report</h2>
+        <button id="download" class="secondary" type="button" disabled>Download JSON</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="total">0</b><span>Citations</span></div>
+        <div class="stat"><b id="clean">0</b><span>Compliant</span></div>
+        <div class="stat"><b id="needs">0</b><span>Needs attention</span></div>
+      </div>
+      <div class="privacy-note">
+        Checking runs in this browser. The only optional external lookup exposes extracted case-citation identifiers, not the document itself or surrounding legal context.
+      </div>
+      <div class="format-warning">
+        <strong>Format only.</strong> MiCite does not validate that a cited case or source exists, verify quoted material or legal inferences, or determine whether an authority has been overruled, superseded, or otherwise limited.
+      </div>
+      <div id="results" class="results" aria-labelledby="report-heading"></div>
+    </section>
+  </main>
+
+  <footer>
+    <img class="footer-logo" src="assets/cognisint-logo-horizontal-reversed.png" alt="Cognisint" />
+    <div class="footer-warning">
+      <strong>MiCite checks citation format only.</strong> It does not validate the existence of a cited case or source, verify quotations or legal inferences, or determine whether an authority has been overruled, superseded, or otherwise limited. MiCite is a formatting tool, not a cite-checking or legal-research tool.
+    </div>
+    <p>
+      MiCite is a free service of
+      <a href="https://cognisint.com" target="_blank" rel="noreferrer">Cognisint LLC</a>,
+      shared by the creator under a
+      <a href="https://fsl.software" target="_blank" rel="noreferrer">Functional Source License</a>.
+      It is not legal advice. <strong>Accuracy is not guaranteed and results may contain errors; please see our
+      <a href="terms.html">Terms of Use</a> for more information.</strong>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="share.js"></script>
+  <script src="install.js"></script>
+</body>
+</html>

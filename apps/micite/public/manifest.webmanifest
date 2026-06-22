@@ -1,0 +1,24 @@
+{
+  "name": "MiCite",
+  "short_name": "MiCite",
+  "description": "Deterministic Michigan legal citation-formatting tool.",
+  "start_url": "app.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#061f43",
+  "theme_color": "#061f43",
+  "icons": [
+    {
+      "src": "assets/micite-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/micite-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

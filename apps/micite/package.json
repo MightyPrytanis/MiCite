@@ -1,0 +1,15 @@
+{
+  "name": "micite",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MiCite static Michigan legal citation-formatting tool",
+  "license": "LicenseRef-FSL-1.1-ALv2",
+  "scripts": {
+    "start": "npx serve public --listen 5177",
+    "build": "node scripts/build-local-package.mjs",
+    "package:local": "node scripts/build-local-package.mjs"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
