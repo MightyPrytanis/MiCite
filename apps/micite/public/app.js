@@ -27,6 +27,7 @@ const RULES = [
   [/\b(USC)\s+§+\s*/g, '$1 ', 'Michigan style uses USC without a section symbol.', true],
   [/\bM\.C\.R\./g, 'MCR', 'Michigan court rules are cited as MCR.', true],
   [/\bM\.R\.E\./g, 'MRE', 'Michigan Rules of Evidence are cited as MRE.', true],
+  [/\bvs\.?\b/gi, 'v', 'Michigan case names use v, not vs.', true],
   [/\bv\./g, 'v', 'Michigan case names use v without a period.', true],
   [/\b(Co|Cos|Corp|Inc|Ltd|Mfg|Assocs?|Bros|Bldg|Cas|Ctrs?|Div|Dist|Ed|Equip|Exch|Fed|Fin|Gov’t|Hts|Hwys?|Hosps?|Indep|Indus|Ins|Mgt|Mfr|Mktg|Muni|Mut|Org|Prod|Prof|Props?|Pub|Rd|Schs?|Servs?|Stds?|Sys|Tel|Twp|Univ)\./g, '$1', 'Michigan case-name abbreviations do not use periods.', true],
   [/\bMCLA\b/g, 'MCL', 'Use MCL, not MCLA, for Michigan Compiled Laws.', false],
@@ -153,7 +154,8 @@ for (const [terms, replacement] of APPENDIX_5_CASE_NAME_ABBREVIATIONS) {
   }
 }
 
-const CASE_NAME_PART = String.raw`[A-Z][A-Za-z0-9'’&.\-() ]+?`;
+const CASE_NAME_PART = String.raw`[A-Za-z0-9][A-Za-z0-9'’&.\-() ]+?`;
+const CASE_CONNECTOR = String.raw`(?:v\.?|vs\.?)`;
 const PIN_CITE = String.raw`(?:\d+(?:-\d+)?|\d+\s+n\s+\d+|\d+\s+nn\s+\d+(?:-\d+)?)`;
 const MCL_SECTION = String.raw`\d+\.\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*`;
 const CASE_REPORTER = String.raw`(?:Mich\.?\s*App\.?|Mich\.?|N\.W\.\s*2d|N\.W\.\s*3d|N\.W\.|NW\s*2d|NW\s*3d|NW2d|NW3d|NW)`;
@@ -161,11 +163,11 @@ const FEDERAL_REPORTER = String.raw`(?:U\.S\.|US|S\.\s*Ct\.|S\s+Ct|L\.\s*Ed\.\s*
 const NORMALIZED_PARALLEL_REPORTER = String.raw`(?:Mich App|Mich|NW2d|NW3d|NW|US|S Ct|L Ed(?: 2d)?|F Appx|Fed Cl|F Supp(?: [23]d)?|F2d|F3d|F4th|F)`;
 
 const PATTERNS = [
-  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART},\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
-  ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART}\))?,\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
-  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART},?\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART},\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}\))?,\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART},?\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
   ['michigan_short_case', new RegExp(String.raw`\b[A-Z][A-Za-z0-9'&.\-\s]+?,\s+\d+\s+${CASE_REPORTER}\s+at\s+\d+(?:-\d+)?`, 'g')],
-  ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
+  ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
   ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
   ['id', /\b[Ii]d\.\s*(?:at\s+\d+(?:-\d+)?)?/g],
   ['statute', /\b(?:M\.C\.L\.|MCL|MCLA|MCLS)\s+\d+\.\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*(?=$|[\s.;,)])(?:\s*(?:through|to|-)\s*(?:M\.C\.L\.|MCL|MCLA|MCLS)?\s*\d+\.\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*)?(?:\s+et\s+seq\.)?/g],
@@ -271,7 +273,7 @@ function trimNarrativeCasePrefix(type, candidate) {
   if (type !== 'michigan_case' && type !== 'federal_case') return candidate;
   if (/^(?:In re|In Re|In the Matter of)\b/.test(candidate.text)) return candidate;
 
-  const vIndex = candidate.text.search(/\s+v\.?\s+/);
+  const vIndex = candidate.text.search(new RegExp(String.raw`\s+${CASE_CONNECTOR}\s+`));
   if (vIndex < 0) return candidate;
 
   const leftSide = candidate.text.slice(0, vIndex);
@@ -315,7 +317,7 @@ function applyRules(text) {
     correctedText = suggestedCorrection;
   }
 
-  const missingCaseNameCommaPattern = new RegExp(String.raw`(\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART})\s+(?=\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+)`, 'g');
+  const missingCaseNameCommaPattern = new RegExp(String.raw`(\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART})\s+(?=\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+)`, 'g');
   if (missingCaseNameCommaPattern.test(correctedText)) {
     missingCaseNameCommaPattern.lastIndex = 0;
     const suggestedCorrection = correctedText.replace(missingCaseNameCommaPattern, '$1, ');
@@ -329,6 +331,41 @@ function applyRules(text) {
   }
 
   return { corrected: correctedText, issues };
+}
+
+function applyCaseAwareRules(text, type) {
+  const casing = normalizeDetectedCaseNameCasing(text, type);
+  const ruleResult = applyRules(casing.corrected);
+  return {
+    corrected: ruleResult.corrected,
+    issues: [...casing.issues, ...ruleResult.issues],
+  };
+}
+
+function titleCaseLikelyCaseNameWord(word) {
+  if (/^(?:v|vs|of|and|the|for|in|on|at|by)$/i.test(word)) return word.toLowerCase();
+  if (/^(?:LLC|PLLC|PC|PLC|NAACP|AFL|CIO|USA|US)$/.test(word)) return word;
+  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
+
+function normalizeDetectedCaseNameCasing(text, type) {
+  if (type !== 'michigan_case' && type !== 'federal_case') return { corrected: text, issues: [] };
+  const reporterMatch = text.match(new RegExp(String.raw`\s+\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+`));
+  if (!reporterMatch?.index) return { corrected: text, issues: [] };
+
+  const prefix = text.slice(0, reporterMatch.index);
+  const normalizedPrefix = prefix.replace(/\b[A-Za-z][A-Za-z'’]*\b/g, titleCaseLikelyCaseNameWord);
+  if (normalizedPrefix === prefix) return { corrected: text, issues: [] };
+
+  return {
+    corrected: normalizedPrefix + text.slice(reporterMatch.index),
+    issues: [{
+      rule: 'MiCite conservative case-name cleanup',
+      message: 'Case-name capitalization appears inconsistent; MiCite normalized obvious mixed-case words in the detected citation.',
+      suggestedCorrection: normalizedPrefix + text.slice(reporterMatch.index),
+      safeToAutoCorrect: true,
+    }],
+  };
 }
 
 function removeParallelCitations(citation) {
@@ -348,7 +385,7 @@ function displayCorrectionFor(finding, options = {}) {
   if (options.includeParallelCitations !== false && finding.parallelSuggestion) {
     return finding.parallelSuggestion;
   }
-  const correctedCitation = applyRules(finding.originalText).corrected;
+  const correctedCitation = applyCaseAwareRules(finding.originalText, finding.citationType).corrected;
   if (options.includeParallelCitations === false && ['michigan_case', 'federal_case'].includes(finding.citationType)) {
     return removeParallelCitations(correctedCitation);
   }
@@ -359,7 +396,7 @@ function advisoryIssues(original, type, current) {
   const issues = [];
   const isCase = type === 'michigan_case' || type === 'michigan_short_case' || type === 'federal_case';
 
-  if (isCase && /\b[A-Z][A-Za-z0-9'’&.\-()\s]+?\s+v\.?\s+[A-Z]/.test(original)) {
+  if (isCase && new RegExp(String.raw`\b[A-Za-z0-9][A-Za-z0-9'’&.\-()\s]+?\s+${CASE_CONNECTOR}\s+[A-Za-z0-9]`).test(original)) {
     issues.push({
       rule: 'Michigan Appellate Opinion Manual 1:7',
       message: 'Case names should be italicized in formatted documents.',
@@ -369,12 +406,20 @@ function advisoryIssues(original, type, current) {
 
   if (
     (type === 'michigan_case' || type === 'federal_case') &&
-    /\b[A-Z][A-Za-z0-9'’&.\-()\s]+?\s+v\.?\s+[A-Z]/.test(original) &&
+    new RegExp(String.raw`\b[A-Za-z0-9][A-Za-z0-9'’&.\-()\s]+?\s+${CASE_CONNECTOR}\s+[A-Za-z0-9]`).test(original) &&
     !/\(\d{4}\)\s*$/.test(current)
   ) {
     issues.push({
       rule: 'Michigan Appellate Opinion Manual 1:8',
       message: 'Full case citations should include a year parenthetical.',
+      safeToAutoCorrect: false,
+    });
+  }
+
+  if ((type === 'michigan_case' || type === 'federal_case') && /\bvs\.?\b/i.test(original)) {
+    issues.push({
+      rule: 'MiCite citation review',
+      message: 'Review the case name and caption; MiCite can normalize citation format but does not verify the authority or party names.',
       safeToAutoCorrect: false,
     });
   }
@@ -468,8 +513,12 @@ function extractCitations(text) {
       const trimmed = trimNarrativeCasePrefix(type, trimCitationMatch(match.index, match[0]));
       const location = lineInfo(text, trimmed.start);
       const page = pageForIndex(text, trimmed.start);
-      const ruleResult = applyRules(trimmed.text);
-      const issues = [...ruleResult.issues, ...advisoryIssues(trimmed.text, type, ruleResult.corrected)];
+      const ruleResult = applyCaseAwareRules(trimmed.text, type);
+      const corrected = ruleResult.corrected;
+      const issues = [
+        ...ruleResult.issues,
+        ...advisoryIssues(trimmed.text, type, corrected),
+      ];
       const issueSummary = [...new Set(issues.map((issue) => issue.message))].join(' ');
       const nonCompliantIssues = issues.filter((issue) => issue.suggestedCorrection);
 
@@ -484,7 +533,7 @@ function extractCitations(text) {
         appearsCompliant: nonCompliantIssues.length === 0,
         status: nonCompliantIssues.length > 0 ? 'Review' : issues.length > 0 ? 'Note' : 'Compliant',
         ruleViolatedOrWarning: issueSummary || undefined,
-        suggestedCorrection: ruleResult.corrected !== trimmed.text ? ruleResult.corrected : issues.find((issue) => issue.suggestedCorrection)?.suggestedCorrection,
+        suggestedCorrection: corrected !== trimmed.text ? corrected : issues.find((issue) => issue.suggestedCorrection)?.suggestedCorrection,
         confidence: issues.length === 0 ? 1 : nonCompliantIssues.every((issue) => issue.safeToAutoCorrect) ? .95 : .82,
         issues,
       });
@@ -521,7 +570,7 @@ function formattedHtmlFor(text, findings, options = {}) {
 
 function checkText(text, applySafeCorrections = false, options = {}) {
   const findings = extractCitations(text);
-  let correctedText = text;
+  let correctedText = '';
   let appliedCorrections = 0;
 
   const replacements = findings
@@ -529,9 +578,11 @@ function checkText(text, applySafeCorrections = false, options = {}) {
     .filter((replacement) => replacement.replacement !== text.slice(replacement.start, replacement.end))
     .sort((a, b) => b.start - a.start);
 
-  const previewText = replacements.reduce((current, replacement) => current.slice(0, replacement.start) + replacement.replacement + current.slice(replacement.end), text);
+  const previewText = findings.length
+    ? replacements.reduce((current, replacement) => current.slice(0, replacement.start) + replacement.replacement + current.slice(replacement.end), text)
+    : '';
 
-  if (applySafeCorrections) {
+  if (applySafeCorrections && findings.length) {
     correctedText = previewText;
     appliedCorrections = replacements.length;
   } else {
@@ -663,6 +714,12 @@ function addLookupIssue(finding, message, verificationProblem = false) {
 
 function rebuildOutputs(report) {
   const text = report.sourceText || input.value;
+  if (!report.findings.length) {
+    report.correctedText = '';
+    report.formattedHtml = escapeHtml(text);
+    report.tables = buildTables(report.findings, currentOptions());
+    return;
+  }
   const replacements = report.findings
     .map((finding) => ({ start: finding.start, end: finding.end, replacement: displayCorrectionFor(finding, currentOptions()) }))
     .filter((replacement) => replacement.replacement !== text.slice(replacement.start, replacement.end))
@@ -830,7 +887,7 @@ function render(report) {
   document.querySelector('#total').textContent = report.totalCitations;
   document.querySelector('#clean').textContent = report.compliant;
   document.querySelector('#needs').textContent = report.noncompliant;
-  corrected.value = report.correctedText || input.value;
+  corrected.value = report.findings.length ? report.correctedText : '';
   formatted.innerHTML = report.formattedHtml || escapeHtml(input.value);
   renderTable(report);
   results.innerHTML = report.findings.length ? '' : '<p class="message">No likely citations found.</p>';
@@ -887,12 +944,13 @@ async function check(applySafeCorrections = false, options = {}) {
   updateParallelSwitchLabel();
   latestReport = checkText(input.value, applySafeCorrections, currentOptions());
   render(latestReport);
-  apply.disabled = latestReport.noncompliant === 0;
+  const hasFindings = latestReport.totalCitations > 0;
+  apply.disabled = latestReport.noncompliant === 0 || !hasFindings;
   download.disabled = false;
-  copyText.disabled = false;
-  copyHtml.disabled = false;
-  copyTable.disabled = false;
-  if (applySafeCorrections) input.value = latestReport.correctedText;
+  copyText.disabled = !hasFindings;
+  copyHtml.disabled = !hasFindings;
+  copyTable.disabled = !hasFindings;
+  if (applySafeCorrections && hasFindings) input.value = latestReport.correctedText;
   if (includeParallels?.checked === false) {
     parallelStatus.textContent = 'Parallel citation formatting is off. MiCite will omit supplied parallel citations where it can do so safely.';
     return;
