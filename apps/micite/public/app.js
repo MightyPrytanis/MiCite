@@ -163,6 +163,7 @@ const NORMALIZED_PARALLEL_REPORTER = String.raw`(?:Mich App|Mich|NW2d|NW3d|NW|US
 const PATTERNS = [
   ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART},\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
   ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART}\))?,\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART},?\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
   ['michigan_short_case', new RegExp(String.raw`\b[A-Z][A-Za-z0-9'&.\-\s]+?,\s+\d+\s+${CASE_REPORTER}\s+at\s+\d+(?:-\d+)?`, 'g')],
   ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
   ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
@@ -266,6 +267,19 @@ function applyRules(text) {
     correctedText = suggestedCorrection;
   }
 
+  const missingCaseNameCommaPattern = new RegExp(String.raw`(\b${CASE_NAME_PART}\s+v\.?\s+${CASE_NAME_PART})\s+(?=\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+)`, 'g');
+  if (missingCaseNameCommaPattern.test(correctedText)) {
+    missingCaseNameCommaPattern.lastIndex = 0;
+    const suggestedCorrection = correctedText.replace(missingCaseNameCommaPattern, '$1, ');
+    issues.push({
+      rule: 'Michigan Appellate Opinion Manual 1:8',
+      message: 'Full case citations use a comma between the case name and reporter citation.',
+      suggestedCorrection,
+      safeToAutoCorrect: true,
+    });
+    correctedText = suggestedCorrection;
+  }
+
   return { corrected: correctedText, issues };
 }
 
@@ -301,6 +315,18 @@ function advisoryIssues(original, type, current) {
     issues.push({
       rule: 'Michigan Appellate Opinion Manual 1:7',
       message: 'Case names should be italicized in formatted documents.',
+      safeToAutoCorrect: false,
+    });
+  }
+
+  if (
+    (type === 'michigan_case' || type === 'federal_case') &&
+    /\b[A-Z][A-Za-z0-9'’&.\-()\s]+?\s+v\.?\s+[A-Z]/.test(original) &&
+    !/\(\d{4}\)\s*$/.test(current)
+  ) {
+    issues.push({
+      rule: 'Michigan Appellate Opinion Manual 1:8',
+      message: 'Full case citations should include a year parenthetical.',
       safeToAutoCorrect: false,
     });
   }
