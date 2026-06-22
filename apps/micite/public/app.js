@@ -175,6 +175,55 @@ const PATTERNS = [
   ['federal_case', new RegExp(String.raw`\b\d+\s+${FEDERAL_REPORTER}\s+\d+(?:\s*;\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*(?:\s*\(\d{4}\))?`, 'g')],
 ];
 
+const SOURCE_FORMAT_EXTENSIONS = [
+  {
+    name: 'Bible',
+    pattern: /\b(?:Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|Samuel|Kings|Chronicles|Ezra|Nehemiah|Esther|Job|Psalms?|Proverbs|Ecclesiastes|Isaiah|Jeremiah|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|Luke|John|Romans|Corinthians|Galatians|Ephesians|Philippians|Colossians|Thessalonians|Timothy|Titus|Philemon|Hebrews|James|Peter|Jude|Revelation)\s+\d+:\d+(?:-\d+)?(?:\s*\([A-Za-z0-9 -]+\))?/g,
+    example: 'Genesis 1:1 (NRSV).',
+    locator: 'book chapter:verse',
+    edition: 'Identify the translation or version if wording matters.',
+  },
+  { name: 'Qur’an', pattern: /\bQur[’']?an\s+\d+:\d+(?:-\d+)?/g, example: 'Qur’an 45:6.', locator: 'sura/chapter:ayah/verse', edition: 'Identify the translation if quoting English wording.' },
+  { name: 'Shakespeare', pattern: /\bShakespeare,\s+[A-Z][A-Za-z ]+,\s+act\s+[IVXLC]+,\s+sc\s+\d+(?:,\s+line[s]?\s+\d+(?:-\d+)?)?/g, example: 'Shakespeare, The Tempest, act II, sc 1.', locator: 'act and scene; add line number if needed by analogy', manual: true },
+  { name: 'Classic plays', pattern: /\b(?:Sophocles|Euripides|Aeschylus|Aristophanes),\s+[A-Z][A-Za-z ]+\s+\d+(?:-\d+)?/g, example: 'Sophocles, Antigone 441-581.', locator: 'line numbers', edition: 'Identify translator or edition if quoting a translation.' },
+  { name: 'The Federalist Papers', pattern: /\bThe Federalist No\.\s+\d+(?:\s+\([A-Za-z]+\))?(?:\s+\([^)]+\))?(?:,\s+p\s+\d+)?/g, example: 'The Federalist No. 81 (Hamilton) (Rossiter ed, 1961), p 482.', locator: 'essay number; author and edition when needed', manual: true },
+  { name: 'Anti-Federalist Papers', pattern: /\b(?:Brutus|Cato|Centinel|Federal Farmer)\s+No\.\s+[IVXLC]+/g, example: 'Brutus No. XI.', locator: 'pseudonym/title and essay number', edition: 'Cite collection or editor if needed.' },
+  { name: 'Marcus Aurelius, Meditations', pattern: /\bMarcus Aurelius,\s+Meditations\s+\d+\.\d+/g, example: 'Marcus Aurelius, Meditations 2.1.', locator: 'book.section', edition: 'Identify translator if quoting.' },
+  { name: 'Gilgamesh', pattern: /\bGilgamesh,\s+tablet\s+\d+,\s+lines?\s+\d+(?:-\d+)?/g, example: 'Gilgamesh, tablet 2, lines 111-114.', locator: 'tablet.line', edition: 'Identify edition or translator if quoting.' },
+  { name: 'Beowulf', pattern: /\bBeowulf\s+\d+(?:-\d+)?/g, example: 'Beowulf 86-89.', locator: 'line numbers', edition: 'Identify editor or translator if quoting.' },
+  { name: 'Homer', pattern: /\bHomer,\s+(?:Iliad|Odyssey)\s+\d+\.\d+(?:-\d+)?/g, example: 'Homer, Odyssey 11.489-491.', locator: 'book.line', edition: 'Identify translator if quoting.' },
+  { name: 'Virgil, Aeneid', pattern: /\bVirgil,\s+Aeneid\s+\d+\.\d+(?:-\d+)?/g, example: 'Virgil, Aeneid 2.49.', locator: 'book.line', edition: 'Identify translator if quoting.' },
+  { name: 'Ovid, Metamorphoses', pattern: /\bOvid,\s+Metamorphoses\s+\d+\.\d+(?:-\d+)?/g, example: 'Ovid, Metamorphoses 1.452-567.', locator: 'book.line', edition: 'Identify translator if quoting.' },
+  { name: 'Dante', pattern: /\bDante,\s+(?:Inferno|Purgatorio|Paradiso)\s+\d+\.\d+(?:-\d+)?/g, example: 'Dante, Inferno 3.1-9.', locator: 'canticle.canto.line', edition: 'Identify translator if quoting.' },
+  { name: 'Milton, Paradise Lost', pattern: /\bMilton,\s+Paradise Lost\s+\d+\.\d+(?:-\d+)?/g, example: 'Milton, Paradise Lost 1.1-26.', locator: 'book.line', edition: 'Identify edition if quoting a particular text.' },
+  { name: 'Chaucer, Canterbury Tales', pattern: /\bChaucer,\s+Canterbury Tales\s+[IVXLC]+\([A-Z]\)\.\d+(?:-\d+)?/g, example: 'Chaucer, Canterbury Tales I(A).1-18.', locator: 'fragment/group.line', edition: 'Identify edition if using scholarly lineation.' },
+  { name: 'Plato', pattern: /\bPlato,\s+(?:The Republic|Republic|Phaedrus|Apology|Crito|Gorgias|Laws|Symposium)\s+\d+[a-e](?:-\d+[a-e])?/g, example: 'Plato, The Republic 514a-517a.', locator: 'Stephanus pagination', edition: 'Identify translator if quoting.' },
+  { name: 'Aristotle', pattern: /\bAristotle,\s+(?:Nicomachean Ethics|Politics)\s+(?:\d+\.\d+,\s+)?\d{4}[ab]\d+(?:-\d+)?/g, example: 'Aristotle, Nicomachean Ethics 1.7, 1098a16.', locator: 'book.chapter and/or Bekker number', edition: 'Identify translator if quoting.' },
+  { name: 'Kant, Critique of Pure Reason', pattern: /\bKant,\s+Critique of Pure Reason\s+A\d+\/B\d+/g, example: 'Kant, Critique of Pure Reason A51/B75.', locator: 'A/B pagination', edition: 'Identify translator or edition if quoting.' },
+  { name: 'Augustine', pattern: /\bAugustine,\s+(?:Confessions|City of God)\s+\d+\.\d+(?:\.\d+)?/g, example: 'Augustine, Confessions 1.1.1.', locator: 'book.chapter.section or book.chapter', edition: 'Identify translator if quoting.' },
+  { name: 'Aquinas, Summa Theologiae', pattern: /\bAquinas,\s+Summa Theologiae\s+[IVX-]+,\s+q\s+\d+,\s+art\s+\d+/g, example: 'Aquinas, Summa Theologiae I-II, q 96, art 4.', locator: 'part, question, article, objection/reply', edition: 'Identify translation if quoting.' },
+  { name: 'Mishnah', pattern: /\bMishnah,\s+[A-Z][A-Za-z]+\s+\d+:\d+/g, example: 'Mishnah, Avot 2:5.', locator: 'tractate chapter:mishnah', edition: 'Identify translation or edition if quoting.' },
+  { name: 'Babylonian Talmud', pattern: /\bBabylonian Talmud,\s+[A-Z][A-Za-z]+\s+\d+[ab]/g, example: 'Babylonian Talmud, Kiddushin 29b.', locator: 'tractate folio side', edition: 'Identify edition or translation if quoting.' },
+  { name: 'Bhagavad Gita', pattern: /\bBhagavad Gita\s+\d+\.\d+/g, example: 'Bhagavad Gita 2.47.', locator: 'chapter.verse', edition: 'Identify translator if quoting.' },
+  { name: 'Mahābhārata', pattern: /\bMah[āa]bh[āa]rata\s+\d+\.\d+\.\d+/g, example: 'Mahābhārata 6.23.1.', locator: 'book.chapter.verse', edition: 'Identify edition or translation because numbering can vary.' },
+  { name: 'Rāmāyaṇa', pattern: /\bR[āa]m[āa]ya[ṇn]a\s+\d+\.\d+\.\d+/g, example: 'Rāmāyaṇa 2.31.4.', locator: 'kāṇḍa/book.sarga.verse', edition: 'Identify edition or translation because numbering can vary.' },
+  { name: 'Confucius, Analects', pattern: /\bConfucius,\s+Analects\s+\d+\.\d+/g, example: 'Confucius, Analects 2.4.', locator: 'book.passage', edition: 'Identify translator if quoting.' },
+  { name: 'Laozi, Dao De Jing', pattern: /\bLaozi,\s+(?:Dao De Jing|Tao Te Ching)\s+ch\s+\d+/g, example: 'Laozi, Dao De Jing ch 1.', locator: 'chapter', edition: 'Identify translator if quoting.' },
+  { name: 'Pali Canon / Buddhist suttas', pattern: /\b(?:Digha Nikaya|Majjhima Nikaya)\s+\d+/g, example: 'Digha Nikaya 2.', locator: 'collection and sutta number; sometimes PTS page', edition: 'Identify translation or edition if quoting.' },
+  { name: 'Dhammapada', pattern: /\bDhammapada\s+(?:\d+\.\d+|v\s+\d+)/g, example: 'Dhammapada 1.1.', locator: 'chapter.verse or verse number', edition: 'Identify translator if quoting.' },
+  { name: 'Sun Tzu, The Art of War', pattern: /\bSun Tzu,\s+The Art of War\s+ch\s+\d+/g, example: 'Sun Tzu, The Art of War ch 1.', locator: 'chapter; sometimes paragraph/section', edition: 'Identify translator or edition because paragraph numbering varies.' },
+  { name: 'Machiavelli', pattern: /\bMachiavelli,\s+(?:The Prince\s+ch\s+\d+|Discourses on Livy\s+\d+\.\d+)/g, example: 'Machiavelli, The Prince ch 18.', locator: 'chapter or book.chapter', edition: 'Identify translator if quoting.' },
+  { name: 'Hobbes, Leviathan', pattern: /\bHobbes,\s+Leviathan\s+ch\s+\d+/g, example: 'Hobbes, Leviathan ch 13.', locator: 'chapter; sometimes paragraph', edition: 'Identify edition if paragraph numbering matters.' },
+  { name: 'Locke, Second Treatise of Government', pattern: /\bLocke,\s+Second Treatise of Government\s+§\s*\d+/g, example: 'Locke, Second Treatise of Government § 95.', locator: 'section number', edition: 'Identify edition if quoting.' },
+  { name: 'Montesquieu, The Spirit of the Laws', pattern: /\bMontesquieu,\s+The Spirit of the Laws\s+bk\s+[IVXLC]+,\s+ch\s+\d+/g, example: 'Montesquieu, The Spirit of the Laws bk XI, ch 6.', locator: 'book.chapter', edition: 'Identify translator if quoting.' },
+  { name: 'Rousseau, The Social Contract', pattern: /\bRousseau,\s+The Social Contract\s+bk\s+[IVXLC]+,\s+ch\s+\d+/g, example: 'Rousseau, The Social Contract bk I, ch 6.', locator: 'book.chapter', edition: 'Identify translator if quoting.' },
+  { name: 'Mill, On Liberty', pattern: /\bMill,\s+On Liberty\s+ch\s+\d+/g, example: 'Mill, On Liberty ch 2.', locator: 'chapter; sometimes paragraph/page', edition: 'Identify edition if quoting.' },
+  { name: 'Tocqueville, Democracy in America', pattern: /\bTocqueville,\s+Democracy in America\s+vol\s+\d+,\s+pt\s+\d+,\s+ch\s+\d+/g, example: 'Tocqueville, Democracy in America vol 1, pt 2, ch 8.', locator: 'volume/part/chapter', edition: 'Identify translator or edition because editions vary.' },
+  { name: 'Blackstone, Commentaries', pattern: /\bBlackstone,\s+Commentaries(?: on the Laws of England)?\s+\d+\s*\*\d+/g, example: 'Follow Michigan Manual format for Blackstone star-page citations.', locator: 'volume and star page', manual: true },
+  { name: 'Coke, Institutes', pattern: /\bCoke,\s+Institutes\s+\d+\s+[A-Za-z0-9]+/g, example: 'Follow Michigan Manual format for Coke.', locator: 'volume/work/page or folio side', manual: true },
+  { name: 'Justinian, Institutes', pattern: /\bJustinian,\s+Institutes\s+\d+\.\d+\.\d+/g, example: 'Follow Michigan Manual format for Justinian.', locator: 'book/title/section', edition: 'Identify translation if quoting.', manual: true },
+];
+
 const input = document.querySelector('#input');
 const corrected = document.querySelector('#corrected');
 const formatted = document.querySelector('#formatted');
@@ -364,8 +413,53 @@ function advisoryIssues(original, type, current) {
   return issues;
 }
 
+function sourceExtensionIssue(rule) {
+  const base = rule.manual
+    ? `Michigan Manual format: follow the Michigan Appellate Opinion Manual's specific form for ${rule.name}.`
+    : `Unofficial extension, not a Michigan Manual rule: suggested practical form for ${rule.name}.`;
+  const details = [`${base} Locator convention: ${rule.locator}.`];
+  if (rule.edition) details.push(rule.edition);
+  return {
+    rule: rule.manual ? 'Michigan Appellate Opinion Manual source format' : 'MiCite curated unofficial source-format extension',
+    message: details.join(' '),
+    safeToAutoCorrect: false,
+  };
+}
+
+function extractSourceFormatExtensions(text) {
+  const findings = [];
+
+  for (const rule of SOURCE_FORMAT_EXTENSIONS) {
+    rule.pattern.lastIndex = 0;
+    let match;
+    while ((match = rule.pattern.exec(text)) !== null) {
+      const trimmed = trimCitationMatch(match.index, match[0]);
+      const location = lineInfo(text, trimmed.start);
+      const page = pageForIndex(text, trimmed.start);
+      const issue = sourceExtensionIssue(rule);
+      findings.push({
+        originalText: trimmed.text,
+        citationType: 'source_format',
+        start: trimmed.start,
+        end: trimmed.end,
+        line: location.line,
+        offset: location.offset,
+        page,
+        appearsCompliant: true,
+        status: 'Note',
+        ruleViolatedOrWarning: issue.message,
+        suggestedCorrection: rule.example,
+        confidence: .72,
+        issues: [issue],
+      });
+    }
+  }
+
+  return findings;
+}
+
 function extractCitations(text) {
-  const candidates = [];
+  const candidates = [...extractSourceFormatExtensions(text)];
 
   for (const [type, pattern] of PATTERNS) {
     pattern.lastIndex = 0;
@@ -725,7 +819,8 @@ function renderTable(report) {
   }
   html = '<table><thead><tr><th>Location</th><th>Type</th><th>Original</th><th>Correction</th><th>Status</th></tr></thead><tbody>';
   for (const finding of rows) {
-    html += `<tr><td>p ${finding.page}, line ${finding.line}</td><td>${escapeHtml(finding.citationType.replaceAll('_', ' '))}</td><td>${escapeHtml(finding.originalText)}</td><td>${escapeHtml(displayCorrectionFor(finding, { includeParallelCitations: includeParallels?.checked !== false }))}</td><td>${escapeHtml(finding.status || (finding.appearsCompliant ? 'Compliant' : 'Review'))}</td></tr>`;
+    const correction = finding.suggestedCorrection || displayCorrectionFor(finding, { includeParallelCitations: includeParallels?.checked !== false });
+    html += `<tr><td>p ${finding.page}, line ${finding.line}</td><td>${escapeHtml(finding.citationType.replaceAll('_', ' '))}</td><td>${escapeHtml(finding.originalText)}</td><td>${escapeHtml(correction)}</td><td>${escapeHtml(finding.status || (finding.appearsCompliant ? 'Compliant' : 'Review'))}</td></tr>`;
   }
   html += '</tbody></table>';
   generatedTable.innerHTML = html;

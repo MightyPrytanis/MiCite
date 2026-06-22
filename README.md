@@ -16,7 +16,7 @@ Static deployable app: `apps/micite`. This app gives users a choice between a br
 
 The local package is cross-platform because it runs in the user's browser: Windows on Intel/AMD, macOS on Intel, and macOS on Apple silicon. No native installer or architecture-specific binary is required.
 
-For Vercel deployment, the public privacy identifies Vercel as the hosting provider and link to Vercel's security documentation after the deployment is configured. Do not claim TLS 1.3, DDoS protection, specific compliance certifications, or any other provider feature until that feature is verified for the deployed project.
+For Vercel deployment, the public privacy identifies Vercel as the hosting provider and link to Vercel's security documentation after the deployment is configured. Future versions of MiCite may include security enhancements like TLS 1.3, DDoS protection, specific compliance certifications, and other features, but will not document or claim such enhancements until they have been properly tested and verified for the deployed project.
 
 The current `apps/micite` deployment is implemented as a browser-local checker with an optional same-origin parallel-citation supplier endpoint. The endpoint rejects free-form text/document payloads and accepts only extracted citation identifiers. MiCite has no account system, no database, and no third-party scripts on the checker page. The local package ZIP is generated at `apps/micite/public/downloads/micite-local.zip`.
 
@@ -78,7 +78,19 @@ The current checker is not yet a complete formatter for every authority category
 
 **MiCite does not verify whether an authority remains good law, has been correctly quoted, accurately supports a proposition, or has been overruled, superseded, or otherwise limited. Optional citation-only CourtListener lookup includes an experimental/prototype reporter-citation and case-name/caption check for cases, but it is not a substitute for legal research.**
 
-Users should treat MiCite as an educational tool, but should not rely on it for verification of authorities, quotations, and legal propositions before filing or relying on any document. 
+Users should treat MiCite as an helpful and educational tool; they should not rely on MiCite alone for verification of authorities, quotations, and legal propositions before filing or relying on any document.
+
+## Curated Source-Format Extensions
+
+MiCite includes a curated source-format extension layer for selected works that may appear in legal writing. Where the Michigan Appellate Opinion Manual specifies a format, MiCite directs the user to follow the Michigan Manual format.
+
+Where the Michigan Appellate Opinion Manual does not specify a format, MiCite may suggest unofficial extensions based on established academic, religious, classical, literary, philosophical, legal-historical, or other recognized citation conventions. These suggested unofficial extensions are intended to preserve stable internal locators and improve reader access across editions and translations. Outputs identify these suggestions as unofficial extensions rather than Michigan Manual formats.
+
+For works with recognized internal citation systems, the suggested unofficial extension generally uses an author-first legal-writing form: `Author, Title locator.` Examples include `Plato, The Republic 514a-517a.`, `Marcus Aurelius, Meditations 2.1.`, and `Dante, Inferno 3.1-9.`
+
+Where a translation, edition, editor, or version affects the quoted language or cited material, that information should be included in the first citation. Subsequent citations may ordinarily use the author, title, and canonical locator. Where the Michigan Appellate Opinion Manual does not specify a format and the work has no stable internal locator, MiCite should fall back to the ordinary book format.
+
+The current curated extension layer includes examples and locator guidance for religious texts, classical works, Shakespeare and other plays, The Federalist Papers, Blackstone, Coke, Justinian, major philosophical works, and selected legal-historical works. It is advisory and under active development.
 
 ## Privacy Model
 
@@ -221,7 +233,7 @@ becomes:
 Brown v Bd of Ed, 347 US 483; 74 S Ct 686; 98 L Ed 873 (1954)
 ```
 ## Potential Future Expansion
-As stated above, MiCite does not include comprehensive formatting review for all items covered by the Appellate Opinions Manual. The manual also discusses or gives examples for many additional source categories that may be added as structured rules before MiCite claims complete manual coverage, including: 
+As stated above, MiCite does not include comprehensive formatting review for all items covered by the Appellate Opinions Manual. The manual provides guidance for many additional source categories that may be added as structured rules before MiCite claims complete manual coverage, including: 
 - Constitutions
 - local charters and ordinances
 - Michigan Supreme Court administrative orders
