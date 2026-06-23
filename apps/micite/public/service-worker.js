@@ -1,4 +1,4 @@
-const CACHE_NAME = 'micite-static-v16';
+const CACHE_NAME = 'micite-static-v18';
 const ASSETS = [
   './',
   'index.html',

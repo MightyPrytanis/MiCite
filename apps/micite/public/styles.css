@@ -49,6 +49,23 @@ a { color: inherit; }
   margin: 18px 24px 16px;
 }
 
+.beta-badge {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  align-self: center;
+  justify-self: start;
+  margin-left: 292px;
+  color: var(--ink);
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: #fff;
+}
+
 .brand > div {
   grid-column: 1;
   grid-row: 2;
@@ -616,6 +633,7 @@ footer a:hover { text-decoration: underline; }
 @media (max-width: 900px) {
   .site-header { grid-template-columns: 1fr; }
   .brand-logo { margin: 14px 18px 12px; width: min(220px, 70vw); }
+  .beta-badge { margin-left: min(252px, 74vw); padding: 6px 12px; font-size: 13px; }
   .brand > div { grid-column: 1; min-height: 88px; padding: 20px 18px 10px; }
   nav { grid-column: 1; grid-row: 3; justify-content: flex-start; padding: 10px 18px 20px; }
   .app-shell { grid-template-columns: 1fr; }

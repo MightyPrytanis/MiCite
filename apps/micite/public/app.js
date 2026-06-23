@@ -167,7 +167,7 @@ const CASE_REPORTER_SEPARATOR = String.raw`(?:\s*[,;:.\-–—]+\s*|\s+)`;
 const PATTERNS = [
   ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)(?:\s+${CASE_REPORTER}\s+\d+)?`, 'g')],
   ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}\))?${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)(?:\s+${CASE_REPORTER}\s+\d+)?`, 'g')],
-  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+|\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
   ['michigan_short_case', new RegExp(String.raw`\b[A-Z][A-Za-z0-9'&.\-\s]+?,\s+\d+\s+${CASE_REPORTER}\s+at\s+\d+(?:-\d+)?`, 'g')],
   ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
   ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
@@ -434,6 +434,15 @@ function displayCorrectionFor(finding, options = {}) {
   return correctedCitation;
 }
 
+function caseNameBoundary(citation) {
+  const boundary = citation.match(new RegExp(String.raw`,\s+\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+`));
+  return boundary?.index ?? citation.indexOf(',');
+}
+
+function hasAmbiguousReporterSequence(citation) {
+  return new RegExp(String.raw`\b\d+\s+(?:Mich App|Mich|US)\s+\d+\s+(?:NW2d|NW3d|NW|S Ct|L Ed(?: 2d)?)\s+\d+\b`).test(citation);
+}
+
 function advisoryIssues(original, type, current) {
   const issues = [];
   const isCase = type === 'michigan_case' || type === 'michigan_short_case' || type === 'federal_case';
@@ -463,6 +472,15 @@ function advisoryIssues(original, type, current) {
       rule: 'MiCite citation review',
       message: 'Review the case name and caption; MiCite can normalize citation format but does not verify the authority or party names.',
       safeToAutoCorrect: false,
+    });
+  }
+
+  if ((type === 'michigan_case' || type === 'federal_case') && hasAmbiguousReporterSequence(current)) {
+    issues.push({
+      rule: 'MiCite citation review',
+      message: 'Reporter sequence appears malformed; verify the official reporter page and parallel reporter citation before relying on any automatic correction.',
+      safeToAutoCorrect: false,
+      verificationProblem: true,
     });
   }
 
@@ -590,7 +608,7 @@ function extractCitations(text) {
 function formattedCitationHtml(finding, options = {}) {
   const correctedCitation = displayCorrectionFor(finding, options);
   if (['michigan_case', 'michigan_short_case', 'federal_case'].includes(finding.citationType)) {
-    const commaIndex = correctedCitation.indexOf(',');
+    const commaIndex = caseNameBoundary(correctedCitation);
     if (commaIndex > 0) {
       return `<em>${escapeHtml(correctedCitation.slice(0, commaIndex))}</em>${escapeHtml(correctedCitation.slice(commaIndex))}`;
     }
@@ -630,6 +648,9 @@ function checkText(text, applySafeCorrections = false, options = {}) {
   } else {
     correctedText = previewText;
   }
+  if (findings.length === 1 && text.trim() === findings[0].originalText && correctedText.trim()) {
+    correctedText = correctedText.trim();
+  }
 
   return {
     manual: {
@@ -657,6 +678,7 @@ function hasParallelCitation(citation) {
 function primaryCitationParts(finding) {
   if (!['michigan_case', 'federal_case'].includes(finding.citationType)) return null;
   const citation = displayCorrectionFor(finding, { includeParallelCitations: false });
+  if (hasAmbiguousReporterSequence(citation)) return null;
   const match = citation.match(/\b(\d+)\s+(Mich App|Mich|US|S Ct|L Ed(?: 2d)?|NW2d|NW3d|F Appx|Fed Cl|F Supp(?: [23]d)?|F2d|F3d|F4th)\s+(\d+)\b/);
   if (!match) return null;
   return {
