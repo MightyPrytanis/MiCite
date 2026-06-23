@@ -428,6 +428,9 @@ function displayCorrectionFor(finding, options = {}) {
     return finding.parallelSuggestion;
   }
   const correctedCitation = applyCaseAwareRules(finding.originalText, finding.citationType).corrected;
+  if (hasAmbiguousReporterSequence(correctedCitation) && !finding.parallelSuggestion) {
+    return finding.originalText.trim();
+  }
   if (options.includeParallelCitations === false && ['michigan_case', 'federal_case'].includes(finding.citationType)) {
     return removeParallelCitations(correctedCitation);
   }
@@ -441,6 +444,19 @@ function caseNameBoundary(citation) {
 
 function hasAmbiguousReporterSequence(citation) {
   return new RegExp(String.raw`\b\d+\s+(?:Mich App|Mich|US)\s+\d+\s+(?:NW2d|NW3d|NW|S Ct|L Ed(?: 2d)?)\s+\d+\b`).test(citation);
+}
+
+function ambiguousRegionalCitationParts(finding, citation = displayCorrectionFor(finding, { includeParallelCitations: false })) {
+  if (!['michigan_case', 'federal_case'].includes(finding.citationType)) return null;
+  const match = citation.match(/\b\d+\s+(Mich App|Mich|US)\s+(\d+)\s+(NW2d|NW3d|NW|S Ct|L Ed(?: 2d)?)\s+(\d+)\b/);
+  if (!match) return null;
+  const regionalReporter = courtListenerReporter(match[3]);
+  return {
+    id: `${finding.start}-${finding.end}`,
+    volume: match[2],
+    reporter: regionalReporter,
+    page: match[4],
+  };
 }
 
 function advisoryIssues(original, type, current) {
@@ -478,7 +494,7 @@ function advisoryIssues(original, type, current) {
   if ((type === 'michigan_case' || type === 'federal_case') && hasAmbiguousReporterSequence(current)) {
     issues.push({
       rule: 'MiCite citation review',
-      message: 'Reporter sequence appears malformed; verify the official reporter page and parallel reporter citation before relying on any automatic correction.',
+      message: 'Reporter sequence appears malformed; MiCite cannot safely correct it without a successful citation lookup. Double-check the actual case, official reporter page, parallel reporter citation, and year before relying on the citation.',
       safeToAutoCorrect: false,
       verificationProblem: true,
     });
@@ -580,7 +596,8 @@ function extractCitations(text) {
         ...advisoryIssues(trimmed.text, type, corrected),
       ];
       const issueSummary = [...new Set(issues.map((issue) => issue.message))].join(' ');
-      const nonCompliantIssues = issues.filter((issue) => issue.suggestedCorrection);
+      const nonCompliantIssues = issues.filter((issue) => issue.suggestedCorrection || issue.verificationProblem);
+      const hasUnresolvedMalformedReporter = hasAmbiguousReporterSequence(corrected);
 
       candidates.push({
         originalText: trimmed.text,
@@ -593,7 +610,9 @@ function extractCitations(text) {
         appearsCompliant: nonCompliantIssues.length === 0,
         status: nonCompliantIssues.length > 0 ? 'Review' : issues.length > 0 ? 'Note' : 'Compliant',
         ruleViolatedOrWarning: issueSummary || undefined,
-        suggestedCorrection: corrected !== trimmed.text ? corrected : issues.find((issue) => issue.suggestedCorrection)?.suggestedCorrection,
+        suggestedCorrection: hasUnresolvedMalformedReporter
+          ? undefined
+          : corrected !== trimmed.text ? corrected : issues.find((issue) => issue.suggestedCorrection)?.suggestedCorrection,
         confidence: issues.length === 0 ? 1 : nonCompliantIssues.every((issue) => issue.safeToAutoCorrect) ? .95 : .82,
         issues,
       });
@@ -638,7 +657,7 @@ function checkText(text, applySafeCorrections = false, options = {}) {
     .filter((replacement) => replacement.replacement !== text.slice(replacement.start, replacement.end))
     .sort((a, b) => b.start - a.start);
 
-  const previewText = findings.length
+  const previewText = findings.length && replacements.length
     ? replacements.reduce((current, replacement) => current.slice(0, replacement.start) + replacement.replacement + current.slice(replacement.end), text)
     : '';
 
@@ -677,8 +696,8 @@ function hasParallelCitation(citation) {
 
 function primaryCitationParts(finding) {
   if (!['michigan_case', 'federal_case'].includes(finding.citationType)) return null;
-  const citation = displayCorrectionFor(finding, { includeParallelCitations: false });
-  if (hasAmbiguousReporterSequence(citation)) return null;
+  const citation = applyCaseAwareRules(finding.originalText, finding.citationType).corrected;
+  if (hasAmbiguousReporterSequence(citation)) return ambiguousRegionalCitationParts(finding, citation);
   const match = citation.match(/\b(\d+)\s+(Mich App|Mich|US|S Ct|L Ed(?: 2d)?|NW2d|NW3d|F Appx|Fed Cl|F Supp(?: [23]d)?|F2d|F3d|F4th)\s+(\d+)\b/);
   if (!match) return null;
   return {
@@ -712,9 +731,15 @@ function courtListenerReporter(reporter) {
 
 function caseNameForFinding(finding) {
   const correctedCitation = displayCorrectionFor(finding, { includeParallelCitations: false });
-  const commaIndex = correctedCitation.indexOf(',');
+  const commaIndex = caseNameBoundary(correctedCitation);
   if (commaIndex < 0) return '';
   return correctedCitation.slice(0, commaIndex).trim();
+}
+
+function caseNameFromNormalizedCitation(citation) {
+  const commaIndex = caseNameBoundary(citation);
+  if (commaIndex < 0) return '';
+  return citation.slice(0, commaIndex).trim();
 }
 
 function normalizeCaseNameForCompare(value) {
@@ -760,6 +785,32 @@ function addYearParenthetical(citation, year) {
   return `${citation} (${year})`;
 }
 
+function repairAmbiguousReporterSequence(finding, baseCitation, returnedParallelCitation, year) {
+  const normalizedCitation = applyCaseAwareRules(finding.originalText, finding.citationType).corrected;
+  if (!hasAmbiguousReporterSequence(normalizedCitation)) return '';
+  const regional = ambiguousRegionalCitationParts(finding, normalizedCitation);
+  if (!regional) return '';
+  const officialMatch = String(returnedParallelCitation || '').match(/\b\d+\s+(?:Mich App|Mich|US)\s+\d+\b/);
+  if (!officialMatch) return '';
+  const caseName = caseNameFromNormalizedCitation(normalizedCitation);
+  if (!caseName) return '';
+  const regionalCitation = `${regional.volume} ${normalizeReporterForMichiganDisplay(regional.reporter)} ${regional.page}`;
+  return addYearParenthetical(`${caseName}, ${officialMatch[0]}; ${regionalCitation}`, year);
+}
+
+function normalizeReporterForMichiganDisplay(reporter) {
+  return {
+    'Mich. App.': 'Mich App',
+    'Mich.': 'Mich',
+    'N.W.2d': 'NW2d',
+    'N.W.3d': 'NW3d',
+    'U.S.': 'US',
+    'S. Ct.': 'S Ct',
+    'L. Ed.': 'L Ed',
+    'L. Ed. 2d': 'L Ed 2d',
+  }[reporter] || reporter;
+}
+
 function recomputeFindingStatus(finding) {
   const issues = finding.issues || [];
   finding.ruleViolatedOrWarning = [...new Set(issues.map((issue) => issue.message).filter(Boolean))].join(' ') || undefined;
@@ -793,9 +844,14 @@ function rebuildOutputs(report) {
     .map((finding) => ({ start: finding.start, end: finding.end, replacement: displayCorrectionFor(finding, currentOptions()) }))
     .filter((replacement) => replacement.replacement !== text.slice(replacement.start, replacement.end))
     .sort((a, b) => b.start - a.start);
-  report.correctedText = replacements.reduce((current, replacement) => (
-    current.slice(0, replacement.start) + replacement.replacement + current.slice(replacement.end)
-  ), text);
+  report.correctedText = replacements.length
+    ? replacements.reduce((current, replacement) => (
+      current.slice(0, replacement.start) + replacement.replacement + current.slice(replacement.end)
+    ), text)
+    : '';
+  if (report.findings.length === 1 && text.trim() === report.findings[0].originalText && report.correctedText.trim()) {
+    report.correctedText = report.correctedText.trim();
+  }
   report.formattedHtml = formattedHtmlFor(text, report.findings, currentOptions());
   report.tables = buildTables(report.findings, currentOptions());
 }
@@ -853,7 +909,11 @@ async function supplyParallelCitations() {
 
       if (result?.parallelCitation) {
         const baseCitation = displayCorrectionFor(finding, { includeParallelCitations: false });
-        finding.parallelSuggestion = addYearParenthetical(addParallelCitation(baseCitation, result.parallelCitation), result.year);
+        const repairedCitation = repairAmbiguousReporterSequence(finding, baseCitation, result.parallelCitation, result.year);
+        finding.parallelSuggestion = repairedCitation || addYearParenthetical(addParallelCitation(baseCitation, result.parallelCitation), result.year);
+        if (repairedCitation) {
+          addLookupIssue(finding, 'Prototype lookup repaired a malformed official/regional reporter sequence from the extracted regional citation. Verify before filing.', true);
+        }
         added += 1;
       } else if (result?.year && !/\(\d{4}\)\s*$/.test(displayCorrectionFor(finding, { includeParallelCitations: false }))) {
         finding.parallelSuggestion = addYearParenthetical(displayCorrectionFor(finding, { includeParallelCitations: true }), result.year);

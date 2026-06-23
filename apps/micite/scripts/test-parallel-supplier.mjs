@@ -50,6 +50,15 @@ const parallel = handler._private.wantedParallelCitations(
 );
 assert.equal(parallel, '597 NW2d 28');
 
+const officialFromRegional = handler._private.wantedParallelCitations(
+  { volume: '600', reporter: 'N.W.2d', page: '638' },
+  [{ status: 200, clusters: [{ citations: [
+    { volume: '461', reporter: 'Mich.', page: '219' },
+    { volume: '600', reporter: 'N.W.2d', page: '638' },
+  ] }] }],
+);
+assert.equal(officialFromRegional, '461 Mich 219');
+
 const names = [...handler._private.collectCaseNames({
   clusters: [{ case_name: 'Smith v Globe Life Insurance Co' }],
 })];

@@ -138,7 +138,9 @@ function citationPart(citation) {
 
 function wantedReportersFor(primaryReporter) {
   if (primaryReporter === 'Mich' || primaryReporter === 'Mich App') return new Set(['NW3d', 'NW2d', 'NW']);
+  if (primaryReporter === 'NW' || primaryReporter === 'NW2d' || primaryReporter === 'NW3d') return new Set(['Mich', 'Mich App']);
   if (primaryReporter === 'US') return new Set(['S Ct', 'L Ed 2d', 'L Ed']);
+  if (primaryReporter === 'S Ct' || primaryReporter === 'L Ed' || primaryReporter === 'L Ed 2d') return new Set(['US']);
   return new Set();
 }
 
