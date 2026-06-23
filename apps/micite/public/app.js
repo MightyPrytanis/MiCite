@@ -29,7 +29,7 @@ const RULES = [
   [/\bM\.R\.E\./g, 'MRE', 'Michigan Rules of Evidence are cited as MRE.', true],
   [/\bvs\.?\b/gi, 'v', 'Michigan case names use v, not vs.', true],
   [/\bv\./g, 'v', 'Michigan case names use v without a period.', true],
-  [/\b(Co|Cos|Corp|Inc|Ltd|Mfg|Assocs?|Bros|Bldg|Cas|Ctrs?|Div|Dist|Ed|Equip|Exch|Fed|Fin|Gov’t|Hts|Hwys?|Hosps?|Indep|Indus|Ins|Mgt|Mfr|Mktg|Muni|Mut|Org|Prod|Prof|Props?|Pub|Rd|Schs?|Servs?|Stds?|Sys|Tel|Twp|Univ)\./g, '$1', 'Michigan case-name abbreviations do not use periods.', true],
+  [/\b(Co|Cos|Corp|Inc|Incorp|Ltd|Mfg|Assocs?|Bros|Bldg|Cas|Ctrs?|Div|Dist|Ed|Equip|Exch|Fed|Fin|Gov’t|Hts|Hwys?|Hosps?|Indep|Indus|Ins|Mgt|Mfr|Mktg|Muni|Mut|Org|Prod|Prof|Props?|Pub|Rd|Schs?|Servs?|Stds?|Sys|Tel|Twp|Univ)\./g, '$1', 'Michigan case-name abbreviations do not use periods.', true],
   [/\bMCLA\b/g, 'MCL', 'Use MCL, not MCLA, for Michigan Compiled Laws.', false],
   [/\bMCLS\b/g, 'MCL', 'Use MCL, not MCLS, for Michigan Compiled Laws.', false],
 ];
@@ -83,7 +83,7 @@ const APPENDIX_5_CASE_NAME_ABBREVIATIONS = [
   [['Highway'], 'Hwy'],
   [['Hospitals'], 'Hosps'],
   [['Hospital'], 'Hosp'],
-  [['Incorporated'], 'Inc'],
+  [['Incorporated', 'Incorp'], 'Inc'],
   [['Independent'], 'Indep'],
   [['Industries'], 'Indus'],
   [['Industry', 'Industrial'], 'Indus'],
@@ -161,11 +161,12 @@ const MCL_SECTION = String.raw`\d+\.\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*`;
 const CASE_REPORTER = String.raw`(?:Mich\.?\s*App\.?|Mich\.?|N\.W\.\s*2d|N\.W\.\s*3d|N\.W\.|NW\s*2d|NW\s*3d|NW2d|NW3d|NW)`;
 const FEDERAL_REPORTER = String.raw`(?:U\.S\.|US|S\.\s*Ct\.|S\s+Ct|L\.\s*Ed\.\s*2d|L\s+Ed\s+2d|L\.\s*Ed\.|L\s+Ed|F\.\s*Appx|F\s+Appx|Fed\.\s*Cl\.?|Fed\s+Cl|F\.\s*Supp\.\s*3d|F\s+Supp\s+3d|F\.\s*Supp\.\s*2d|F\s+Supp\s+2d|F\.\s*Supp\.|F\s+Supp|F\.\s*2d|F\.\s*3d|F\.\s*4th|F\s*2d|F\s*3d|F\s*4th|F2d|F3d|F4th)`;
 const NORMALIZED_PARALLEL_REPORTER = String.raw`(?:Mich App|Mich|NW2d|NW3d|NW|US|S Ct|L Ed(?: 2d)?|F Appx|Fed Cl|F Supp(?: [23]d)?|F2d|F3d|F4th|F)`;
+const NORMALIZED_REGIONAL_REPORTER = String.raw`(?:NW2d|NW3d|NW)`;
 const CASE_REPORTER_SEPARATOR = String.raw`(?:\s*[,;:.\-–—]+\s*|\s+)`;
 
 const PATTERNS = [
-  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
-  ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}\))?${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)(?:\s+${CASE_REPORTER}\s+\d+)?`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}\))?${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)(?:\s+${CASE_REPORTER}\s+\d+)?`, 'g')],
   ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
   ['michigan_short_case', new RegExp(String.raw`\b[A-Z][A-Za-z0-9'&.\-\s]+?,\s+\d+\s+${CASE_REPORTER}\s+at\s+\d+(?:-\d+)?`, 'g')],
   ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
@@ -312,6 +313,32 @@ function applyRules(text) {
     issues.push({
       rule: 'Michigan Appellate Opinion Manual 1:9.1-1:9.2',
       message: 'Parallel citations in Michigan style are separated by semicolons.',
+      suggestedCorrection,
+      safeToAutoCorrect: true,
+    });
+    correctedText = suggestedCorrection;
+  }
+
+  const duplicatedParallelVolumePattern = new RegExp(String.raw`(\d+\s+(?:Mich App|Mich)\s+\d+),\s*(\d+)\s*;\s*\2\s+(${NORMALIZED_REGIONAL_REPORTER})\s+(\d+)`, 'g');
+  if (duplicatedParallelVolumePattern.test(correctedText)) {
+    duplicatedParallelVolumePattern.lastIndex = 0;
+    const suggestedCorrection = correctedText.replace(duplicatedParallelVolumePattern, '$1; $2 $3 $4');
+    issues.push({
+      rule: 'Michigan Appellate Opinion Manual 1:9.1-1:9.2',
+      message: 'Parallel citation volume numbers should not be duplicated as a pin cite before the semicolon.',
+      suggestedCorrection,
+      safeToAutoCorrect: true,
+    });
+    correctedText = suggestedCorrection;
+  }
+
+  const duplicatedTrailingReporterPattern = new RegExp(String.raw`(\b\d+\s+(${NORMALIZED_REGIONAL_REPORTER})\s+(\d+)\s*\(\d{4}\))\s+\2\s+\3\b`, 'g');
+  if (duplicatedTrailingReporterPattern.test(correctedText)) {
+    duplicatedTrailingReporterPattern.lastIndex = 0;
+    const suggestedCorrection = correctedText.replace(duplicatedTrailingReporterPattern, '$1');
+    issues.push({
+      rule: 'Michigan Appellate Opinion Manual 1:9.1-1:9.2',
+      message: 'A duplicate reporter/page fragment after the year parenthetical should be removed.',
       suggestedCorrection,
       safeToAutoCorrect: true,
     });
