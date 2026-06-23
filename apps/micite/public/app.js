@@ -154,20 +154,21 @@ for (const [terms, replacement] of APPENDIX_5_CASE_NAME_ABBREVIATIONS) {
   }
 }
 
-const CASE_NAME_PART = String.raw`[A-Za-z0-9][A-Za-z0-9'’&.\-() ]+?`;
+const CASE_NAME_PART = String.raw`[A-Za-z0-9][A-Za-z0-9'’&.,\-() ]+?`;
 const CASE_CONNECTOR = String.raw`(?:v\.?|vs\.?)`;
 const PIN_CITE = String.raw`(?:\d+(?:-\d+)?|\d+\s+n\s+\d+|\d+\s+nn\s+\d+(?:-\d+)?)`;
 const MCL_SECTION = String.raw`\d+\.\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*`;
 const CASE_REPORTER = String.raw`(?:Mich\.?\s*App\.?|Mich\.?|N\.W\.\s*2d|N\.W\.\s*3d|N\.W\.|NW\s*2d|NW\s*3d|NW2d|NW3d|NW)`;
 const FEDERAL_REPORTER = String.raw`(?:U\.S\.|US|S\.\s*Ct\.|S\s+Ct|L\.\s*Ed\.\s*2d|L\s+Ed\s+2d|L\.\s*Ed\.|L\s+Ed|F\.\s*Appx|F\s+Appx|Fed\.\s*Cl\.?|Fed\s+Cl|F\.\s*Supp\.\s*3d|F\s+Supp\s+3d|F\.\s*Supp\.\s*2d|F\s+Supp\s+2d|F\.\s*Supp\.|F\s+Supp|F\.\s*2d|F\.\s*3d|F\.\s*4th|F\s*2d|F\s*3d|F\s*4th|F2d|F3d|F4th)`;
 const NORMALIZED_PARALLEL_REPORTER = String.raw`(?:Mich App|Mich|NW2d|NW3d|NW|US|S Ct|L Ed(?: 2d)?|F Appx|Fed Cl|F Supp(?: [23]d)?|F2d|F3d|F4th|F)`;
+const CASE_REPORTER_SEPARATOR = String.raw`(?:\s*[,;:.\-–—]+\s*|\s+)`;
 
 const PATTERNS = [
-  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART},\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
-  ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}\))?,\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
-  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART},?\s+\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b(?:In re|In Re|In the Matter of)\s+${CASE_NAME_PART}(?:\s+\(${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}\))?${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)`, 'g')],
+  ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?(?:\s*\(\d{4}\))?`, 'g')],
   ['michigan_short_case', new RegExp(String.raw`\b[A-Z][A-Za-z0-9'&.\-\s]+?,\s+\d+\s+${CASE_REPORTER}\s+at\s+\d+(?:-\d+)?`, 'g')],
-  ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
+  ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
   ['federal_case', new RegExp(String.raw`\b${CASE_NAME_PART},\s+\d+\s+${FEDERAL_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[,;]\s*\d+\s+${FEDERAL_REPORTER}\s+\d+)*\s*\((?:[^)]*?,?\s*)?\d{4}\)`, 'g')],
   ['id', /\b[Ii]d\.\s*(?:at\s+\d+(?:-\d+)?)?/g],
   ['statute', /\b(?:M\.C\.L\.|MCL|MCLA|MCLS)\s+\d+\.\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*(?=$|[\s.;,)])(?:\s*(?:through|to|-)\s*(?:M\.C\.L\.|MCL|MCLA|MCLS)?\s*\d+\.\d+[A-Za-z]?(?:\([A-Za-z0-9]+\))*)?(?:\s+et\s+seq\.)?/g],
@@ -317,7 +318,21 @@ function applyRules(text) {
     correctedText = suggestedCorrection;
   }
 
-  const missingCaseNameCommaPattern = new RegExp(String.raw`(\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART})\s+(?=\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+)`, 'g');
+  const caseNameWithoutReporter = String.raw`(?:(?!\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+)[A-Za-z0-9'’&.,\-() ])+?`;
+  const noisyCaseReporterSeparatorPattern = new RegExp(String.raw`(\b${caseNameWithoutReporter}\s+${CASE_CONNECTOR}\s+${caseNameWithoutReporter})\s*(?:,{2,}|[,;:.\-–—]*[;:.\-–—]+[,;:.\-–—]*)\s*(?=\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+)`, 'g');
+  if (noisyCaseReporterSeparatorPattern.test(correctedText)) {
+    noisyCaseReporterSeparatorPattern.lastIndex = 0;
+    const suggestedCorrection = correctedText.replace(noisyCaseReporterSeparatorPattern, (_match, caseName) => `${caseName.replace(/[,\s;:.\-–—]+$/, '')}, `);
+    issues.push({
+      rule: 'Michigan Appellate Opinion Manual 1:8',
+      message: 'Full case citations use one comma between the case name and reporter citation; stray separator punctuation is disregarded.',
+      suggestedCorrection,
+      safeToAutoCorrect: true,
+    });
+    correctedText = suggestedCorrection;
+  }
+
+  const missingCaseNameCommaPattern = new RegExp(String.raw`(\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART})(?<!,)\s+(?=\d+\s+(?:${CASE_REPORTER}|${FEDERAL_REPORTER})\s+\d+)`, 'g');
   if (missingCaseNameCommaPattern.test(correctedText)) {
     missingCaseNameCommaPattern.lastIndex = 0;
     const suggestedCorrection = correctedText.replace(missingCaseNameCommaPattern, '$1, ');
@@ -691,6 +706,11 @@ function addParallelCitation(citation, parallelCitation) {
   return `${citation.slice(0, -year.length)}; ${parallelCitation}${year}`;
 }
 
+function addYearParenthetical(citation, year) {
+  if (!year || /\(\d{4}\)\s*$/.test(citation)) return citation;
+  return `${citation} (${year})`;
+}
+
 function recomputeFindingStatus(finding) {
   const issues = finding.issues || [];
   finding.ruleViolatedOrWarning = [...new Set(issues.map((issue) => issue.message).filter(Boolean))].join(' ') || undefined;
@@ -784,7 +804,10 @@ async function supplyParallelCitations() {
 
       if (result?.parallelCitation) {
         const baseCitation = displayCorrectionFor(finding, { includeParallelCitations: false });
-        finding.parallelSuggestion = addParallelCitation(baseCitation, result.parallelCitation);
+        finding.parallelSuggestion = addYearParenthetical(addParallelCitation(baseCitation, result.parallelCitation), result.year);
+        added += 1;
+      } else if (result?.year && !/\(\d{4}\)\s*$/.test(displayCorrectionFor(finding, { includeParallelCitations: false }))) {
+        finding.parallelSuggestion = addYearParenthetical(displayCorrectionFor(finding, { includeParallelCitations: true }), result.year);
         added += 1;
       }
     }

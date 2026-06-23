@@ -201,6 +201,28 @@ function collectCaseNames(value, names = new Set(), depth = 0) {
   return names;
 }
 
+function collectYears(value, years = new Set(), depth = 0) {
+  if (depth > 8 || value == null) return years;
+  if (Array.isArray(value)) {
+    for (const item of value) collectYears(item, years, depth + 1);
+    return years;
+  }
+  if (typeof value !== 'object') return years;
+
+  for (const key of ['dateFiled', 'date_filed', 'dateDecided', 'date_decided', 'date', 'year']) {
+    const valueForKey = value[key];
+    const match = String(valueForKey || '').match(/\b(1[7-9]\d{2}|20\d{2})\b/);
+    if (match) years.add(match[1]);
+  }
+
+  for (const key of ['clusters', 'results', 'opinions', 'citations_resolved', 'sub_opinions']) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      collectYears(value[key], years, depth + 1);
+    }
+  }
+  return years;
+}
+
 function wantedParallelCitations(primary, courtListenerPayload) {
   const primaryReporter = normalizeReporter(primary.reporter);
   const wantedReporters = wantedReportersFor(primaryReporter);
@@ -276,6 +298,7 @@ async function lookupCitation(citation) {
     error: first?.error_message || '',
     normalizedCitations: first?.normalized_citations || [],
     caseNames: [...collectCaseNames(payload)].slice(0, 5),
+    year: [...collectYears(payload)][0] || '',
     parallelCitation,
   };
 }
@@ -312,6 +335,7 @@ module.exports._private = {
   assertCitationOnlyPayload,
   collectCitationObjects,
   collectCaseNames,
+  collectYears,
   normalizeReporter,
   wantedParallelCitations,
 };
