@@ -14,6 +14,8 @@ MiCite is one tool with multiple surfaces, not multiple separate products.
 
 This repository is the canonical source for the deployable MiCite application, including the public web app at `MiCite.online`, the downloadable local package, privacy/security copy, Vercel configuration, and the optional citation-only CourtListener supplier.
 
+Avoiding duplicate deployable copies is intentional. MiCite makes user-facing privacy and citation-formatting promises, so stale copies can create real risk: one surface may have newer privacy guards, safer CourtListener lookup behavior, corrected citation rules, or an updated local package while another silently lags behind. Keeping one canonical deployable app reduces drift, makes audits easier, and gives users one source of truth for what MiCite does and does not do.
+
 Other surfaces may call or adapt MiCite, but they should not become independent forks of the deployable app. In particular, Cyrano/codebase may expose a MiCite-powered MCP citation-checking tool, but the deployable MiCite web/local application should be maintained here first.
 
 The intended boundary is:
