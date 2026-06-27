@@ -8,6 +8,22 @@ The manual sets the standards used by the Michigan Supreme Court Office of the R
 
 **Important limitation:** MiCite is primarily a citation-formatting tool. Optional citation-only CourtListener lookup for parallel citations includes an experimental/prototype check that may report whether a reporter citation was found and may flag apparent case-name/caption mismatches when CourtListener returns usable metadata. MiCite does not verify quoted material or legal inferences, or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited.
 
+## Project Boundaries
+
+MiCite is one tool with multiple surfaces, not multiple separate products.
+
+This repository is the canonical source for the deployable MiCite application, including the public web app at `MiCite.online`, the downloadable local package, privacy/security copy, Vercel configuration, and the optional citation-only CourtListener supplier.
+
+Other surfaces may call or adapt MiCite, but they should not become independent forks of the deployable app. In particular, Cyrano/codebase may expose a MiCite-powered MCP citation-checking tool, but the deployable MiCite web/local application should be maintained here first.
+
+The intended boundary is:
+
+- `MightyPrytanis/MiCite`: source of truth for the MiCite app, user-facing surfaces, privacy boundary, local package, and deployment.
+- `MightyPrytanis/codebase`: source of truth for Cyrano and MCP integration. It may contain adapters or shared/imported citation-checking logic needed by Cyrano, but should not be treated as a second canonical MiCite deployment.
+- Future surfaces, such as browser extensions or a Microsoft Word add-in, should reuse the same MiCite rules and privacy model rather than reimplementing citation logic independently.
+
+If MiCite files are temporarily copied into another repository or surface for testing, the copy should be treated as temporary or generated unless a separate architectural decision is made. Privacy-sensitive changes, CourtListener lookup behavior, and citation-formatting rules should be reconciled back into this repository before release.
+
 ## Deployment
 
 Public domain: `MiCite.online`. The hosted deployment path is Vercel connected to a public GitHub repository. This repository contains source code and deployment configuration only, not user-submitted documents, citations, reports, or corrected output.
