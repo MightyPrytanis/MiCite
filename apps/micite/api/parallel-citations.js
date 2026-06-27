@@ -1,6 +1,42 @@
 const COURTLISTENER_ENDPOINT = 'https://www.courtlistener.com/api/rest/v4/citation-lookup/';
 const MAX_CITATIONS_PER_REQUEST = 50;
 const TOKEN = process.env.COURTLISTENER_API_TOKEN;
+const ALLOWED_REPORTERS = new Set([
+  'Mich.',
+  'Mich. App.',
+  'Mich',
+  'Mich App',
+  'N.W.',
+  'N.W.2d',
+  'N.W.3d',
+  'NW',
+  'NW2d',
+  'NW3d',
+  'U.S.',
+  'US',
+  'S. Ct.',
+  'S Ct',
+  'L. Ed.',
+  'L Ed',
+  'L. Ed. 2d',
+  'L Ed 2d',
+  'F. Appx',
+  'F Appx',
+  'Fed. Cl.',
+  'Fed Cl',
+  'F. Supp.',
+  'F Supp',
+  'F. Supp. 2d',
+  'F Supp 2d',
+  'F. Supp. 3d',
+  'F Supp 3d',
+  'F.2d',
+  'F2d',
+  'F.3d',
+  'F3d',
+  'F.4th',
+  'F4th',
+]);
 
 const REPORTER_TO_MICHIGAN_STYLE = new Map([
   ['Mich.', 'Mich'],
@@ -11,6 +47,8 @@ const REPORTER_TO_MICHIGAN_STYLE = new Map([
   ['S. Ct.', 'S Ct'],
   ['L. Ed.', 'L Ed'],
   ['L. Ed. 2d', 'L Ed 2d'],
+  ['F. Appx', 'F Appx'],
+  ['Fed. Cl.', 'Fed Cl'],
   ['F. Supp.', 'F Supp'],
   ['F. Supp. 2d', 'F Supp 2d'],
   ['F. Supp. 3d', 'F Supp 3d'],
@@ -28,6 +66,8 @@ const MICHIGAN_STYLE_TO_COURTLISTENER_REPORTER = new Map([
   ['S Ct', 'S. Ct.'],
   ['L Ed', 'L. Ed.'],
   ['L Ed 2d', 'L. Ed. 2d'],
+  ['F Appx', 'F. Appx'],
+  ['Fed Cl', 'Fed. Cl.'],
   ['F Supp', 'F. Supp.'],
   ['F Supp 2d', 'F. Supp. 2d'],
   ['F Supp 3d', 'F. Supp. 3d'],
@@ -46,6 +86,8 @@ const REPORTER_PRIORITY = [
   'S Ct',
   'L Ed 2d',
   'L Ed',
+  'Fed Cl',
+  'F Appx',
   'F Supp 3d',
   'F Supp 2d',
   'F Supp',
@@ -58,6 +100,8 @@ function sendJson(response, status, payload) {
   response.statusCode = status;
   response.setHeader('Content-Type', 'application/json; charset=utf-8');
   response.setHeader('Cache-Control', 'no-store');
+  response.setHeader('Referrer-Policy', 'no-referrer');
+  response.setHeader('X-Content-Type-Options', 'nosniff');
   response.end(JSON.stringify(payload));
 }
 
@@ -110,15 +154,15 @@ function assertCitationOnlyPayload(payload) {
       }
     }
     const { id, volume, reporter, page } = citation;
-    if (!/^[\w-]{1,80}$/.test(String(id))) throw new Error('Invalid citation id.');
-    if (!/^\d{1,5}$/.test(String(volume))) throw new Error('Invalid citation volume.');
-    if (!/^[A-Za-z0-9. ]{1,30}$/.test(String(reporter))) throw new Error('Invalid citation reporter.');
-    if (!/^\d{1,6}[A-Za-z]?$/.test(String(page))) throw new Error('Invalid citation page.');
+    if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(id)) throw new Error('Invalid citation id.');
+    if (typeof volume !== 'string' || !/^\d{1,5}$/.test(volume)) throw new Error('Invalid citation volume.');
+    if (typeof reporter !== 'string' || !ALLOWED_REPORTERS.has(reporter)) throw new Error('Invalid citation reporter.');
+    if (typeof page !== 'string' || !/^\d{1,6}[A-Za-z]?$/.test(page)) throw new Error('Invalid citation page.');
     return {
-      id: String(id),
-      volume: String(volume),
-      reporter: String(reporter),
-      page: String(page),
+      id,
+      volume,
+      reporter,
+      page,
     };
   });
 }
@@ -247,42 +291,26 @@ function wantedParallelCitations(primary, courtListenerPayload) {
     .join('; ');
 }
 
-function citationString(citation) {
-  return `${citation.volume} ${courtListenerReporter(citation.reporter)} ${citation.page}`;
-}
-
 async function lookupCitation(citation) {
   const baseHeaders = {
     Accept: 'application/json',
   };
   if (TOKEN) baseHeaders.Authorization = `Token ${TOKEN}`;
 
-  const jsonResponse = await fetch(COURTLISTENER_ENDPOINT, {
+  const form = new URLSearchParams();
+  form.set('volume', citation.volume);
+  form.set('reporter', courtListenerReporter(citation.reporter));
+  form.set('page', citation.page);
+
+  const response = await fetch(COURTLISTENER_ENDPOINT, {
     method: 'POST',
     headers: {
       ...baseHeaders,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: JSON.stringify({ text: citationString(citation) }),
+    body: form.toString(),
   });
-  let response = jsonResponse;
-  let payload = await response.json().catch(() => null);
-
-  if (!response.ok && (response.status === 400 || response.status === 415 || response.status === 422)) {
-    const form = new URLSearchParams();
-    form.set('volume', citation.volume);
-    form.set('reporter', courtListenerReporter(citation.reporter));
-    form.set('page', citation.page);
-    response = await fetch(COURTLISTENER_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        ...baseHeaders,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: form.toString(),
-    });
-    payload = await response.json().catch(() => null);
-  }
+  const payload = await response.json().catch(() => null);
 
   const first = Array.isArray(payload) ? payload[0] : payload;
   const status = first?.status || response.status;

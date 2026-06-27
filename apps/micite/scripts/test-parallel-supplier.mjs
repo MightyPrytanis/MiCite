@@ -35,10 +35,36 @@ assert.throws(
 );
 
 assert.throws(
+  () => handler._private.assertCitationOnlyPayload({ citations: ['460 Mich 446'] }),
+  /Invalid citation entry/,
+);
+
+assert.throws(
   () => handler._private.assertCitationOnlyPayload({
     citations: [{ id: 'a', volume: '460', reporter: 'Mich.', page: '446', caseName: 'Smith v Globe Life' }],
   }),
   /caseName/,
+);
+
+assert.throws(
+  () => handler._private.assertCitationOnlyPayload({
+    citations: [{ id: 'a', volume: '460', reporter: 'Confidential Client', page: '446' }],
+  }),
+  /Invalid citation reporter/,
+);
+
+assert.throws(
+  () => handler._private.assertCitationOnlyPayload({
+    citations: [{ volume: '460', reporter: 'Mich.', page: '446' }],
+  }),
+  /Invalid citation id/,
+);
+
+assert.throws(
+  () => handler._private.assertCitationOnlyPayload({
+    citations: [{ id: 'a', volume: 460, reporter: 'Mich.', page: '446' }],
+  }),
+  /Invalid citation volume/,
 );
 
 const parallel = handler._private.wantedParallelCitations(
@@ -74,14 +100,8 @@ globalThis.fetch = async (_url, options) => {
   calls += 1;
   assert(!String(options.body).includes('Globe Life'));
   assert(!String(options.body).includes('document'));
-
-  if (calls === 1) {
-    return {
-      ok: false,
-      status: 415,
-      json: async () => ({ error_message: 'Unsupported media type' }),
-    };
-  }
+  assert(!String(options.body).includes('Smith'));
+  assert(!String(options.body).includes('text'));
 
   assert.equal(options.headers['Content-Type'], 'application/x-www-form-urlencoded');
   assert.equal(String(options.body), 'volume=460&reporter=Mich.&page=446');
@@ -108,6 +128,14 @@ assert.equal(response.body.results[0].found, true);
 assert.equal(response.body.results[0].parallelCitation, '597 NW2d 28');
 assert.deepEqual(response.body.results[0].caseNames, ['Smith v Globe Life Insurance Co']);
 assert.equal(response.body.results[0].year, '1999');
-assert.equal(calls, 2);
+assert.equal(calls, 1);
+
+const rejectedResponse = await invoke({
+  citations: [{ id: '1-10', volume: '460', reporter: 'Privileged Matter', page: '446' }],
+});
+
+assert.equal(rejectedResponse.statusCode, 400);
+assert.match(rejectedResponse.body.error, /Invalid citation reporter/);
+assert.equal(calls, 1);
 
 console.log('Parallel citation supplier tests passed.');

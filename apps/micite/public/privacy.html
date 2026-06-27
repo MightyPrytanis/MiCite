@@ -34,7 +34,7 @@ MiCite is designed around deterministic, no-retention citation-formatting review
 
 In the default checking workflow, document text is processed in your browser. MiCite has no account system, no database for user documents, no third-party scripts, and no remote AI model call.
 
-Everything is processed locally except optional CourtListener parallel-citation lookup. If the user enables “Format with parallel citations,” the only information exposed outside the browser for that feature is the extracted reporter citation needed for lookup: volume, reporter, and page. MiCite does not send the full document, case name, argument, factual discussion, party discussion, notes, citation tables, corrected output, or surrounding context for that lookup.
+Everything is processed locally except optional CourtListener parallel-citation lookup. If the user enables “Format with parallel citations,” the browser first extracts citation identifiers and verifies that each lookup item contains only id, volume, reporter, and page. The same-origin lookup endpoint repeats that validation and sends CourtListener only volume, reporter, and page. MiCite does not send the full document, case name, argument, factual discussion, party discussion, notes, citation tables, corrected output, or surrounding context for that lookup.
 
 Data flow:
 
@@ -58,11 +58,11 @@ Optional parallel-citation lookup flow:
    |
    | 1. User opts into CourtListener lookup
    v
-[MiCite Browser-Local Extractor]
+[MiCite Browser-Local Extractor and Citation-Only Validator]
    |
-   | 2. Extracted case-citation identifiers only
+   | 2. Extracted citation fields only: id, volume, reporter, page
    v
-[MiCite Same-Origin Lookup Endpoint]
+[MiCite Same-Origin Lookup Endpoint and Citation-Only Validator]
    |
    | 3. Volume/reporter/page lookup request only
    v
@@ -81,7 +81,7 @@ Optional parallel-citation lookup flow:
         <p>MiCite does not require user accounts, logins, passwords, billing information, or personally identifying information.</p>
         <p>MiCite does not use cookies, advertising pixels, behavioral trackers, third-party analytics scripts, or cross-site tracking technologies. MiCite does not harvest, retain, sell, rent, or share document contents, citation reports, corrected text, formatted output, or user-supplied legal materials.</p>
         <p>MiCite does not send uploaded TXT/MD files, full document text, citation reports, corrected text, formatted output, legal argument, notes, or surrounding citation context to an LLM provider, remote database, or remote formatting server. The deployed formatting engine performs citation-formatting review in the browser.</p>
-        <p>Everything is processed locally except optional CourtListener parallel-citation lookup. If the user enables “Format with parallel citations,” the only information exposed outside the browser for that feature is the extracted reporter citation needed for lookup: volume, reporter, and page. MiCite does not send case names or document context for that lookup. The CourtListener lookup is used to retrieve possible public parallel citations. As an experimental/prototype side effect, it may report whether a reporter citation was found and may flag apparent case-name/caption mismatches when returned metadata permits it. Users should independently verify all returned citations before filing.</p>
+        <p>Everything is processed locally except optional CourtListener parallel-citation lookup. If the user enables “Format with parallel citations,” the browser sends MiCite's same-origin lookup endpoint only extracted citation identifiers: id, volume, reporter, and page. The endpoint rejects free-form text, case names, document fields, and unsupported reporter values, then sends CourtListener only volume, reporter, and page. MiCite does not send case names or document context for that lookup. The CourtListener lookup is used to retrieve possible public parallel citations. As an experimental/prototype side effect, it may report whether a reporter citation was found and may flag apparent case-name/caption mismatches when returned metadata permits it. Users should independently verify all returned citations before filing.</p>
         <p>Vercel or other hosting infrastructure may process ordinary web request metadata needed to serve static files, protect the service, diagnose errors, and understand aggregate usage, such as IP address, user-agent, timestamp, requested URL, and response status. MiCite is designed so document text and surrounding legal context are not included in those requests, and Cognisint does not sell or rent that request metadata.</p>
         <p>Contact: info@cognisint.com.</p>
       </div>

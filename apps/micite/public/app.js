@@ -163,6 +163,25 @@ const FEDERAL_REPORTER = String.raw`(?:U\.S\.|US|S\.\s*Ct\.|S\s+Ct|L\.\s*Ed\.\s*
 const NORMALIZED_PARALLEL_REPORTER = String.raw`(?:Mich App|Mich|NW2d|NW3d|NW|US|S Ct|L Ed(?: 2d)?|F Appx|Fed Cl|F Supp(?: [23]d)?|F2d|F3d|F4th|F)`;
 const NORMALIZED_REGIONAL_REPORTER = String.raw`(?:NW2d|NW3d|NW)`;
 const CASE_REPORTER_SEPARATOR = String.raw`(?:\s*[,;:.\-–—]+\s*|\s+)`;
+const PARALLEL_LOOKUP_REPORTERS = new Set([
+  'Mich.',
+  'Mich. App.',
+  'N.W.',
+  'N.W.2d',
+  'N.W.3d',
+  'U.S.',
+  'S. Ct.',
+  'L. Ed.',
+  'L. Ed. 2d',
+  'F. Appx',
+  'Fed. Cl.',
+  'F. Supp.',
+  'F. Supp. 2d',
+  'F. Supp. 3d',
+  'F.2d',
+  'F.3d',
+  'F.4th',
+]);
 
 const PATTERNS = [
   ['michigan_case', new RegExp(String.raw`\b${CASE_NAME_PART}\s+${CASE_CONNECTOR}\s+${CASE_NAME_PART}${CASE_REPORTER_SEPARATOR}\d+\s+${CASE_REPORTER}\s+\d+(?:,\s*${PIN_CITE})?(?:\s*[;,]\s*\d+\s+${CASE_REPORTER}\s+\d+)?\s*\(\d{4}\)(?:\s+${CASE_REPORTER}\s+\d+)?`, 'g')],
@@ -772,6 +791,16 @@ function parallelLookupRequests(report) {
     .filter(Boolean);
 }
 
+function isParallelLookupCitation(citation) {
+  if (!citation || typeof citation !== 'object' || Array.isArray(citation)) return false;
+  const keys = Object.keys(citation);
+  if (keys.length !== 4 || !keys.every((key) => ['id', 'volume', 'reporter', 'page'].includes(key))) return false;
+  return /^[A-Za-z0-9_-]{1,80}$/.test(citation.id)
+    && /^\d{1,5}$/.test(citation.volume)
+    && PARALLEL_LOOKUP_REPORTERS.has(citation.reporter)
+    && /^\d{1,6}[A-Za-z]?$/.test(citation.page);
+}
+
 function addParallelCitation(citation, parallelCitation) {
   if (!parallelCitation || hasParallelCitation(citation)) return citation;
   const yearMatch = citation.match(/\s*\(\d{4}\)\s*$/);
@@ -865,6 +894,10 @@ async function supplyParallelCitations() {
   const citations = parallelLookupRequests(latestReport);
   if (!citations.length) {
     parallelStatus.textContent = 'Parallel citation formatting is on. No missing parallel citations were found for lookup.';
+    return;
+  }
+  if (!citations.every(isParallelLookupCitation)) {
+    parallelStatus.textContent = 'Parallel lookup was stopped because a citation-only request could not be verified in the browser.';
     return;
   }
   parallelStatus.textContent = `Looking up ${citations.length} extracted reporter citation${citations.length === 1 ? '' : 's'} only. No document text or case names are sent.`;

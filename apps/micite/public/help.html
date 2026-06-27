@@ -37,11 +37,11 @@
 
         <h3>What does MiCite check?</h3>
         <p>MiCite is limited to citation formatting. It focuses on reporter abbreviations, punctuation, spacing, court-rule formatting, statutory citation formatting, and citation forms commonly used in Michigan legal writing.</p>
-        <p>MiCite is not a full cite-checking or legal-research tool. When parallel citation formatting is on, MiCite uses citation-only CourtListener lookup to help supply missing parallel citations. As an experimental/prototype side effect, it may report whether a reporter citation was found and may flag a likely case-name mismatch when returned metadata permits it. MiCite does not verify that quoted material or legal inferences are accurate or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited.</p>
+        <p>MiCite is not a full cite-checking or legal-research tool. When parallel citation formatting is on, MiCite uses citation-only CourtListener lookup to help supply missing parallel citations. The browser and same-origin lookup endpoint validate that lookup requests contain only citation fields, not free-form text or case names. As an experimental/prototype side effect, MiCite may compare a case name kept in the browser against public metadata returned by CourtListener and flag a likely mismatch. MiCite does not verify that quoted material or legal inferences are accurate or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited.</p>
         <p>The Michigan Appellate Opinion Manual contains broader guidance about grammar, quotations, capitalization, numbers, opinion structure, and legal writing style. Most of that is outside the current scope of MiCite.</p>
 
         <h3>What does MiCite not check?</h3>
-        <p>MiCite does not tell you whether a case, statute, rule, or other authority is still good law. It does not Shepardize® citations, use KeyCite®, update, validate, or rank authorities. The optional CourtListener lookup includes an experimental/prototype reporter-citation and case-name/caption check for cases, but it does not confirm that a quotation is accurate or decide whether a citation supports the sentence where it appears.</p>
+        <p>MiCite does not tell you whether a case, statute, rule, or other authority is still good law. It does not Shepardize® citations, use KeyCite®, update, validate, or rank authorities. The optional CourtListener lookup includes an experimental/prototype reporter-citation check and a browser-local comparison against returned public case-name/caption metadata for cases, but it does not confirm that a quotation is accurate or decide whether a citation supports the sentence where it appears.</p>
         <p>MiCite also does not guarantee that every possible citation format will be detected. Legal citations vary, and some citations may be unusual, incomplete, ambiguous, or outside the current scope of the tool.</p>
 
         <h3>Does MiCite use AI?</h3>
@@ -75,7 +75,7 @@
         <p>MiCite uses deterministic formatting rules. Sometimes a citation may be ambiguous, the app may apply a rule too broadly, or the citation may be valid in a context the app does not understand. Use your own judgment and verify the final form before relying on a suggested correction.</p>
 
         <h3>Can I use MiCite with confidential or privileged material?</h3>
-        <p>Review the <a href="privacy.html">Security & Privacy</a> before using MiCite with confidential, privileged, or sensitive material. As a general practice, avoid pasting more confidential information than necessary. In many cases, you can test a citation by pasting only the citation itself or a short excerpt.</p>
+        <p>Review the <a href="privacy.html">Security & Privacy</a> before using MiCite with confidential, privileged, or sensitive material. As a general practice, avoid pasting more confidential information than necessary. In many cases, you can test a citation by pasting only the citation itself or a short excerpt. If optional parallel lookup is on, MiCite is designed to send only extracted reporter citation fields for lookup: volume, reporter, and page.</p>
 
         <h3>Does MiCite comply with State Bar of Michigan guidance about privileged and confidential information?</h3>
         <p>MiCite is designed to reduce confidentiality risk by focusing only on citation formatting and by avoiding generative AI.</p>
