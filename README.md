@@ -114,7 +114,7 @@ For works with recognized internal citation systems, the suggested unofficial ex
 
 Where a translation, edition, editor, or version affects the quoted language or cited material, that information should be included in the first citation. Subsequent citations may ordinarily use the author, title, and canonical locator. Where the Michigan Appellate Opinion Manual does not specify a format and the work has no stable internal locator, MiCite should fall back to the ordinary book format.
 
-The current curated extension layer includes examples and locator guidance for religious texts, classical works, Shakespeare and other plays, The Federalist Papers, Blackstone, Coke, Justinian, major philosophical works, and selected legal-historical works. It is advisory and under active development.
+The current curated extension layer includes examples and locator guidance for religious texts, classical works, Shakespeare and other plays, The Federalist Papers, Blackstone, Coke, Justinian, major philosophical works, and selected legal-historical works. These source-format notes are part of MiCite beta testing. They are advisory, under active development, and should be independently verified before use.
 
 ## Privacy Model
 
@@ -259,7 +259,7 @@ becomes:
 Brown v Bd of Ed, 347 US 483; 74 S Ct 686; 98 L Ed 873 (1954)
 ```
 ## Potential Future Expansion
-As stated above, MiCite does not include comprehensive formatting review for every source category addressed by the Michigan Appellate Opinion Manual. MiCite already includes limited advisory source-format notes for selected Manual-based and curated non-Manual sources, but that coverage is not yet comprehensive. Future versions may expand those notes into fuller structured deterministic rules, with rule-source labels, coverage status, examples, and safer correction behavior before MiCite describes itself as providing comprehensive Manual coverage.
+As stated above, MiCite does not include comprehensive formatting review for every source category addressed by the Michigan Appellate Opinion Manual. MiCite already includes limited advisory source-format notes for selected Manual-based and curated non-Manual sources as part of beta testing, but that coverage is not yet comprehensive. Future versions may expand those notes into fuller structured deterministic rules, with rule-source labels, coverage status, examples, and safer correction behavior before MiCite describes itself as providing comprehensive Manual coverage.
 
 Manual-based categories that may be added, expanded, or hardened include:
 
@@ -278,7 +278,7 @@ Manual-based categories that may be added, expanded, or hardened include:
 - Nonlegal books, newspapers, magazines, and general periodicals.
 - Internet materials, websites, blogs, and online reference sources.
 
-MiCite also includes a curated source-format extension layer outside the Michigan Manual rule set for selected works. Those extensions should remain labeled as unofficial where the Manual does not provide a specific form, should preserve stable internal locators where available, and should not be presented as Michigan Manual requirements. Existing and potential extension categories include religious texts, classical works, philosophical works, literary works, historical legal works, Homer, Dante, Plato, Aristotle, Marcus Aurelius, The Federalist Papers, Blackstone, Wikipedia, blogs, and other digital sources.
+MiCite also includes a beta-test curated source-format extension layer outside the Michigan Manual rule set for selected works. Those extensions should remain labeled as unofficial where the Manual does not provide a specific form, should preserve stable internal locators where available, and should not be presented as Michigan Manual requirements. Existing and potential extension categories include religious texts, classical works, philosophical works, literary works, historical legal works, Homer, Dante, Plato, Aristotle, Marcus Aurelius, The Federalist Papers, Blackstone, Wikipedia, blogs, and other digital sources.
 
 As of now, MiCite remains under development. It may, after testing and user feedback, be expanded and enhanced. Other possible future developments *may* include:
 
