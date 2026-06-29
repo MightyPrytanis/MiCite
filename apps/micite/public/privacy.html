@@ -22,6 +22,7 @@
       <a href="index.html">Back to MiCite</a>
       <a href="help.html">Help / FAQ</a>
       <a href="terms.html">Terms</a>
+      <a class="feedback-nav" href="mailto:info@cognisint.com?subject=MiCite%20Feedback%20or%20Error%20Report">Report Error</a>
       <button type="button" data-share-micite>Share MiCite</button>
       <a href="https://square.link/u/8LB1IjwM?src=embed" target="_blank" rel="noreferrer">Support MiCite</a>
     </nav>
@@ -81,6 +82,7 @@ Optional parallel-citation lookup flow:
         <p>MiCite does not require user accounts, logins, passwords, billing information, or personally identifying information.</p>
         <p>MiCite does not use cookies, advertising pixels, behavioral trackers, third-party analytics scripts, or cross-site tracking technologies. MiCite does not harvest, retain, sell, rent, or share document contents, citation reports, corrected text, formatted output, or user-supplied legal materials.</p>
         <p>MiCite does not send uploaded TXT/MD files, full document text, citation reports, corrected text, formatted output, legal argument, notes, or surrounding citation context to an LLM provider, remote database, or remote formatting server. The deployed formatting engine performs citation-formatting review in the browser.</p>
+        <p>MiCite's current citation-formatting engine does not use generative AI. Future optional features may use AI, but MiCite will not transmit user text, uploaded files, citation reports, corrected output, formatted output, or other user data to generative AI without user notification and opt-in.</p>
         <p>Everything is processed locally except optional CourtListener parallel-citation lookup. If the user enables “Format with parallel citations,” the browser sends MiCite's same-origin lookup endpoint only extracted citation identifiers: id, volume, reporter, and page. The endpoint rejects free-form text, case names, document fields, and unsupported reporter values, then sends CourtListener only volume, reporter, and page. MiCite does not send case names or document context for that lookup. The CourtListener lookup is used to retrieve possible public parallel citations. As an experimental/prototype side effect, it may report whether a reporter citation was found and may flag apparent case-name/caption mismatches when returned metadata permits it. Users should independently verify all returned citations before filing.</p>
         <p>Vercel or other hosting infrastructure may process ordinary web request metadata needed to serve static files, protect the service, diagnose errors, and understand aggregate usage, such as IP address, user-agent, timestamp, requested URL, and response status. MiCite is designed so document text and surrounding legal context are not included in those requests, and Cognisint does not sell or rent that request metadata.</p>
         <p>Contact: info@cognisint.com.</p>
@@ -96,7 +98,7 @@ Optional parallel-citation lookup flow:
       MiCite is a free service of
       <a href="https://cognisint.com" target="_blank" rel="noreferrer">Cognisint LLC</a>,
       shared by the creator under a
-      <a href="https://fsl.software" target="_blank" rel="noreferrer">Functional Source License</a>.
+      <a href="https://fsl.software" target="_blank" rel="noreferrer">Functional Source License, Version 1.1, ALv2 Future License</a>.
       It is not legal advice. <strong>Accuracy is not guaranteed and results may contain errors; please see our
       <a href="terms.html">Terms of Use</a> for more information.</strong>
     </p>

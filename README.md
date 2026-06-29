@@ -8,6 +8,10 @@ The manual sets the standards used by the Michigan Supreme Court Office of the R
 
 **Important limitation:** MiCite is primarily a citation-formatting tool. Optional citation-only CourtListener lookup for parallel citations includes an experimental/prototype check that may report whether a reporter citation was found and may flag apparent case-name/caption mismatches when CourtListener returns usable metadata. MiCite does not verify quoted material or legal inferences, or determine whether an authority has been overruled, superseded, abrogated, vacated, distinguished, or otherwise limited.
 
+## License
+
+MiCite is shared under the **Functional Source License, Version 1.1, ALv2 Future License** (`FSL-1.1-ALv2`). See [LICENSE.md](LICENSE.md).
+
 ## Project Boundaries
 
 MiCite is one tool with multiple surfaces, not multiple separate products.
@@ -113,6 +117,8 @@ The current curated extension layer includes examples and locator guidance for r
 ## Privacy Model
 
 MiCite is designed around deterministic, no-retention citation-formatting review. The strongest confidentiality mode is the local-install version, where the formatting engine runs on the user's own machine and does not transmit document text to Cognisint, any LLM provider, a remote database, or a third-party citation service. The hosted web version keeps core formatting review in the browser and uses an optional citation-only lookup path for missing parallel citations.
+
+MiCite's current citation-formatting engine does not use generative AI, large language models, or automated legal reasoning. Expanded features currently in development may use AI in limited ways, and AI assistance was used in coding MiCite. MiCite has also been designed to be compatible with AI systems using the Model Context Protocol. MiCite will never transmit user data to generative AI without user notification and opt-in.
 
 ## Installation and Use
 
