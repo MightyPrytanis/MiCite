@@ -259,28 +259,31 @@ becomes:
 Brown v Bd of Ed, 347 US 483; 74 S Ct 686; 98 L Ed 873 (1954)
 ```
 ## Potential Future Expansion
-As stated above, MiCite does not include comprehensive formatting review for all items covered by the Appellate Opinions Manual. The manual provides guidance for many additional source categories that may be added as structured rules before MiCite claims complete manual coverage, including: 
-- Constitutions
-- local charters and ordinances
-- Michigan Supreme Court administrative orders
-- Model Jury instructions
-- Attorney General opinions
-- Law reviews and journals
-- Administrative decisions
-- Executive orders
-- Federal regulations
-- Treatises and restatements
-- Model codes and uniform laws
-- Dictionaries
-- Non-legal books and periodicals
-- Internet materials
+As stated above, MiCite does not include comprehensive formatting review for every source category addressed by the Michigan Appellate Opinion Manual. MiCite already includes limited advisory source-format notes for selected Manual-based and curated non-Manual sources, but that coverage is not yet comprehensive. Future versions may expand those notes into fuller structured deterministic rules, with rule-source labels, coverage status, examples, and safer correction behavior before MiCite describes itself as providing comprehensive Manual coverage.
 
-Additional curated formats outside the manual could be maintained separately from the Michigan-manual rule set. Candidate categories include religious texts, classical works, historical legal works, Shakespeare, the Odyssey, the Federalist Papers, Wikipedia, blogs, and other digital sources.
+Manual-based categories that may be added, expanded, or hardened include:
+
+- Constitutions.
+- Local charters and ordinances.
+- Michigan Supreme Court administrative orders.
+- Model jury instructions.
+- Attorney General opinions.
+- Administrative agency rules, orders, and decisions.
+- Executive orders.
+- Federal statutes and regulations.
+- State and federal court rules beyond the current MVP set.
+- Treatises, restatements, model codes, and uniform laws.
+- Dictionaries and encyclopedias.
+- Law reviews, bar journals, and other legal periodicals.
+- Nonlegal books, newspapers, magazines, and general periodicals.
+- Internet materials, websites, blogs, and online reference sources.
+
+MiCite also includes a curated source-format extension layer outside the Michigan Manual rule set for selected works. Those extensions should remain labeled as unofficial where the Manual does not provide a specific form, should preserve stable internal locators where available, and should not be presented as Michigan Manual requirements. Existing and potential extension categories include religious texts, classical works, philosophical works, literary works, historical legal works, Homer, Dante, Plato, Aristotle, Marcus Aurelius, The Federalist Papers, Blackstone, Wikipedia, blogs, and other digital sources.
 
 As of now, MiCite remains under development. It may, after testing and user feedback, be expanded and enhanced. Other possible future developments *may* include:
 
 - Incorporate the entirety of the Michigan Appellate Opinion Manual formatting guidance as structured deterministic rule data, with rule-source labels and coverage status.
-- Add a curated supplemental source-format layer for authorities not fully covered by the manual, separate from Michigan guidelines.
+- Expand and harden the curated supplemental source-format layer for authorities not fully covered by the manual, separate from Michigan guidelines.
 - Expand and harden accurate missing parallel-citation generation from authoritative sources.
 - Browser plug-ins/extensions for checking citations inside web-based drafting workflows.
 - Microsoft Word add-in for checking and applying formatted citation corrections inside Word.
